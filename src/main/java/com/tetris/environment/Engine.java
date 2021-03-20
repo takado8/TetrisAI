@@ -18,6 +18,7 @@ public class Engine {
         initGameField();
         addNewFallingTetriminoToGameField();
         System.out.println("Finished initializing game engine\n");
+        printGameFieldArr();
     }
 
     /**
@@ -35,7 +36,6 @@ public class Engine {
             }
         }
         printGameFieldArr();
-
     }
 
     /**
@@ -44,6 +44,8 @@ public class Engine {
     private boolean moveDown() {
         if (canMoveDown()) {   // move down tetrimino
             Brick[] bricks = fallingTetrimino.getBricks();
+            Position[] newPositions = new Position[4];
+            // get new positions and erase old bricks
             for (int i = 0; i < bricks.length; i++) {
                 Brick brick = bricks[i];
                 var position = brick.getPosition();
@@ -51,11 +53,15 @@ public class Engine {
                 var y = position.getY();
                 // draw brick in new position
                 var new_y = y + 1;
-                gameFieldArr[new_y][x] = GAME_FIELD_BRICK_FALLING;
+                newPositions[i] = new Position(x, new_y);
                 // erase old brick from array
                 gameFieldArr[y][x] = GAME_FIELD_EMPTY;
                 // change position in brick object
                 fallingTetrimino.bricks[i].setPosition(new Position(x, new_y));
+            }
+            // draw new bricks on array
+            for(var newPosition : newPositions) {
+                gameFieldArr[newPosition.getY()][newPosition.getX()] = GAME_FIELD_BRICK_FALLING;
             }
             return true;
         } else {   // change game field states
