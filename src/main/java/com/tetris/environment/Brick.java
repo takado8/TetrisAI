@@ -6,17 +6,17 @@ import java.util.ArrayList;
  * Smallest part of the {@code Tetrimino} block.
  */
 public class Brick {
-    public final Color color;
     private Position position;
+    public final Color color;
 
     public Brick(Position position) {
         this.position = position;
-        this.color = null;
+        this.color = null; // is it bad?
     }
 
-    public Brick(Color color, Position position) {
-        this.color = color;
+    public Brick(Position position, Color color) {
         this.position = position;
+        this.color = color;
     }
 
     public Position getPosition() {

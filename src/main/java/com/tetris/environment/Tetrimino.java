@@ -3,6 +3,8 @@ package com.tetris.environment;
 import java.util.Random;
 
 import static com.tetris.environment.Shape.*;
+import static com.tetris.environment.Constants.GAME_FIELD_SIZE_X;
+import static com.tetris.environment.Constants.GAME_FIELD_SIZE_Y;
 
 /**
  * {@code Tetrimino} class builds Tetrimino piece from 4 bricks,
@@ -10,27 +12,58 @@ import static com.tetris.environment.Shape.*;
  */
 public class Tetrimino {
     static Random random = new Random();
-    static Shape[] shapes = {I, O, T, L, J, S, Z};
-    static int shape_index = 7;
+    static Shape[] shapes = {I, O};  //, T, L, J, S, Z};
+    static int shape_index = shapes.length;
 
     public final Shape shape;
-//    public final Color color;
-    private Brick[] bricks = new Brick[4];
+    public final Color color;
+
+    public final Brick[] bricks = new Brick[4];
 
     public Tetrimino() {
+        // determine tetrimino shape
         if (shape_index == shapes.length) {
             Shuffle();
             shape_index = 0;
         }
         shape = shapes[shape_index++];
-        buildTetrimino();
+        // construct tetrimino from bricks.
+        //
+        // get game field middle for tetrimino spawn position
+        int gameFieldMiddleX = GAME_FIELD_SIZE_X / 2;
+        // build tetrimino
+        if (shape == I) {
+            color = Color.blue;
+            int spawn_x = gameFieldMiddleX - 2;  // spawn on middle top
+            for (int i = 0; i < 4; i++) {
+                var position = new Position(spawn_x + i, 0);
+                bricks[i] = new Brick(position, color);
+            }
+        }
+        else if (shape == O) {
+            color = Color.red;
+            int spawn_x = gameFieldMiddleX - 1;
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    var position = new Position(spawn_x+i, j);
+                    bricks[i*2 + j] = new Brick(position);
+                }
+            }
+        }
+        else {
+            color = Color.black;
+            int spawn_x = 0;  // Spawn in corner
+            for (int i = 0; i < 4; i++) {
+                var position = new Position(spawn_x + i, 0);
+                bricks[i] = new Brick(position, color);
+            }
+        }
+
+
     }
 
-    /**
-     * create 4 {@code Brick}s in correct positions according to Tetrimino shape and color and add them to {@code bricks} array.
-     */
-    private void buildTetrimino() {
-        // need to know tetrimino spawn position, and game field size
+    public Brick[] getBricks() {
+        return bricks;
     }
 
     private void Shuffle() {
