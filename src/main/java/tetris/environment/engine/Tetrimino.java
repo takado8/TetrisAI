@@ -1,14 +1,9 @@
-package com.tetris.environment.engine;
-
-import com.tetris.environment.engine.Brick;
-import com.tetris.environment.engine.Color;
-import com.tetris.environment.engine.Position;
-import com.tetris.environment.engine.Shape;
+package tetris.environment.engine;
 
 import java.util.Random;
 
-import static com.tetris.environment.engine.Shape.*;
-import static com.tetris.environment.engine.Constants.GAME_FIELD_SIZE_X;
+import static tetris.environment.engine.Shape.*;
+import static tetris.environment.engine.Constants.GAME_FIELD_SIZE_X;
 
 
 /**

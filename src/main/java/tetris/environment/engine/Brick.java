@@ -1,4 +1,4 @@
-package com.tetris.environment.engine;
+package tetris.environment.engine;
 
 /**
  * Smallest part of the {@code Tetrimino} block.

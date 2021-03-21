@@ -1,2 +1,0 @@
-# kodilla-tetris
- 

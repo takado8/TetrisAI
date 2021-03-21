@@ -1,9 +1,9 @@
-package com.tetris.environment.engine;
+package tetris.environment.engine;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import static com.tetris.environment.engine.Constants.*;
+import static tetris.environment.engine.Constants.*;
 
 /**
  * Central class of tetris environment, responsible for game logic - maintaining game field,
