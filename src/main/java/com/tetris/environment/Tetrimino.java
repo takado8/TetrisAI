@@ -4,16 +4,16 @@ import java.util.Random;
 
 import static com.tetris.environment.Shape.*;
 import static com.tetris.environment.Constants.GAME_FIELD_SIZE_X;
-import static com.tetris.environment.Constants.GAME_FIELD_SIZE_Y;
+
 
 /**
- * {@code Tetrimino} class builds Tetrimino piece from 4 bricks,
+ * Builds {@code Tetrimino} piece from 4 bricks,
  * randomly in 1 of 7 arrangements.
  */
 public class Tetrimino {
-    static Random random = new Random();
-    static Shape[] shapes = {I, O};  //, T, L, J, S, Z};
-    static int shape_index = shapes.length;
+    private static final Random random = new Random(); // or should be declared static only once for the whole project?
+    private static final Shape[] shapes = {I, O};  //, T, L, J, S, Z};
+    private static int shape_index = shapes.length;
 
     public final Shape shape;
     public final Color color;
@@ -28,7 +28,6 @@ public class Tetrimino {
         }
         shape = shapes[shape_index++];
         // construct tetrimino from bricks.
-        //
         // get game field middle for tetrimino spawn position
         int gameFieldMiddleX = GAME_FIELD_SIZE_X / 2;
         // build tetrimino
@@ -39,18 +38,16 @@ public class Tetrimino {
                 var position = new Position(spawn_x + i, 0);
                 bricks[i] = new Brick(position, color);
             }
-        }
-        else if (shape == O) {
+        } else if (shape == O) {
             color = Color.red;
             int spawn_x = gameFieldMiddleX - 1;
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 2; j++) {
-                    var position = new Position(spawn_x+i, j);
-                    bricks[i*2 + j] = new Brick(position);
+                    var position = new Position(spawn_x + i, j);
+                    bricks[i * 2 + j] = new Brick(position);
                 }
             }
-        }
-        else {
+        } else {
             color = Color.black;
             int spawn_x = 0;  // Spawn in corner
             for (int i = 0; i < 4; i++) {
@@ -58,8 +55,6 @@ public class Tetrimino {
                 bricks[i] = new Brick(position, color);
             }
         }
-
-
     }
 
     public Brick[] getBricks() {
