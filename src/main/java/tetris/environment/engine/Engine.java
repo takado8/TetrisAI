@@ -19,21 +19,23 @@ public class Engine {
         System.out.println("\nInitializing game engine...");
         initGameField();
         System.out.println("Finished initializing game engine\n");
-        printGameFieldArr();
+        reset();
     }
 
     /**
      * Take next step in environment
      */
-    public void step() {
+    public boolean step() {
         // render
-        // (no render for now)
+        printGameFieldArr();
+        // some delay
+        sleep(1);
         // take action from user/operator
         // (no action for now)
         // execute action
         // (no action for now)
         // move piece down (every turn)
-        boolean isFinalStep;
+        boolean isFinalStep = false;
         if (canMoveDown()) {
             moveDown();
         } else {
@@ -47,13 +49,13 @@ public class Engine {
                 isFinalStep = true;
                 totalGameScore += gameScore;
                 gameScore = 0;
+                System.out.println("> GAME OVER <");
             } else {
                 // game is not over, add new tetrimino
-                isFinalStep = false;
                 addNewFallingTetriminoToGameField();
             }
         }
-        // return observation, reward ,isFinalStep
+        return isFinalStep;
     }
 
     /**
