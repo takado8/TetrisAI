@@ -1,5 +1,6 @@
 package com.tetris.environment;
 
+import com.tetris.environment.engine.Engine;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

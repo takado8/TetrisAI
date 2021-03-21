@@ -1,4 +1,4 @@
-package com.tetris.environment;
+package com.tetris.environment.engine;
 
 public enum Color {
     white,

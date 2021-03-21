@@ -1,6 +1,4 @@
-package com.tetris.environment;
-
-import java.util.ArrayList;
+package com.tetris.environment.engine;
 
 /**
  * Smallest part of the {@code Tetrimino} block.

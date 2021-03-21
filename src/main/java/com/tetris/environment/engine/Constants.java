@@ -1,4 +1,4 @@
-package com.tetris.environment;
+package com.tetris.environment.engine;
 
 public class Constants {
     public final static int GAME_FIELD_SIZE_X = 10;

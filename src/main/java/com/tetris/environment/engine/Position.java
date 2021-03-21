@@ -1,4 +1,4 @@
-package com.tetris.environment;
+package com.tetris.environment.engine;
 
 public class Position {
     private final int x;
