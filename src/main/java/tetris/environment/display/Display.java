@@ -12,6 +12,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import tetris.environment.Constants;
 import tetris.environment.engine.Brick;
 import tetris.environment.engine.Position;
 import javafx.animation.AnimationTimer;
@@ -40,6 +41,7 @@ public class Display extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         System.out.println("Display.start");
+        System.out.println(Constants.DisplayConst.toStringStatic());
         this.primaryStage = primaryStage;
         // set main window parameters
         setWindowParameters();
