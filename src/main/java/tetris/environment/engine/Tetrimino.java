@@ -3,7 +3,7 @@ package tetris.environment.engine;
 import java.util.Random;
 
 import static tetris.environment.engine.Shape.*;
-import static tetris.environment.engine.Constants.GAME_FIELD_SIZE_X;
+import static tetris.environment.Constants.EngineConst.GAME_FIELD_SIZE_X;
 
 
 /**

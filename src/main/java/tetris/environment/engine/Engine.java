@@ -3,7 +3,7 @@ package tetris.environment.engine;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import static tetris.environment.engine.Constants.*;
+import static tetris.environment.Constants.EngineConst.*;
 
 /**
  * Central class of tetris environment, responsible for game logic - maintaining game field,
@@ -61,10 +61,9 @@ public class Engine {
     /**
      * Set environment to initial condition and return initial observation
      */
-    public int[][] reset() {
+    public void reset() {
         initGameField();
         addNewFallingTetriminoToGameField();
-        return getGameFieldArr();
     }
 
     /**
@@ -199,7 +198,7 @@ public class Engine {
         System.out.println();
     }
 
-    void sleep(int seconds) {
+    public static void sleep(int seconds) {
         try {
             TimeUnit.SECONDS.sleep(seconds);
         } catch (InterruptedException e) {

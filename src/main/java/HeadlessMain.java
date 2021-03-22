@@ -1,6 +1,6 @@
 import tetris.environment.engine.Engine;
 
-public class TempMain {
+public class HeadlessMain {
 
     public static void main(String[] args) {
         Engine engine = new Engine();
