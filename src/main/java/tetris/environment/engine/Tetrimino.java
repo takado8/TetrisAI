@@ -26,14 +26,14 @@ public class Tetrimino {
             Shuffle();
             shape_index = 0;
         }
-        shape = shapes[shape_index++];
+        shape = I;// shapes[shape_index++];
         // construct tetrimino from bricks.
         // get game field middle for tetrimino spawn position
         int gameFieldMiddleX = GAME_FIELD_SIZE_X / 2;
         // build tetrimino
         if (shape == I) {
             color = Color.blue;
-            int spawn_x = gameFieldMiddleX - 2;  // spawn on middle top
+            int spawn_x =0;// gameFieldMiddleX - 2;  // spawn on middle top
             for (int i = 0; i < 4; i++) {
                 var position = new Position(spawn_x + i, 0);
                 bricks[i] = new Brick(position, color);

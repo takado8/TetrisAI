@@ -4,8 +4,11 @@ package tetris.environment.engine;
  * Smallest part of the {@code Tetrimino} block.
  */
 public class Brick {
-    private Position position;
+    private static int idCounter = 0;
+
+    public final int id = idCounter++;
     public final Color color;
+    private Position position;
 
     public Brick(Position position) {
         this.position = position;

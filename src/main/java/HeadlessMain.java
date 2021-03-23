@@ -6,7 +6,7 @@ public class HeadlessMain {
         Engine engine = new Engine();
         boolean result = false;
         while (!result) {
-            result = engine.step();
+            result = engine.step().isFinalStep;
         }
     }
 }

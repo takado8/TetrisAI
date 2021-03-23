@@ -2,8 +2,12 @@ package tetris.environment.display;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -14,24 +18,25 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import tetris.environment.Constants;
 import tetris.environment.engine.Brick;
+import tetris.environment.engine.Engine;
 import tetris.environment.engine.Position;
 import javafx.animation.AnimationTimer;
-import tetris.environment.engine.Tetrimino;
+import tetris.environment.engine.StepResult;
 
-import java.time.LocalTime;
+import java.util.LinkedList;
+import java.util.List;
 
 import static tetris.environment.Constants.DisplayConst.*;
 
 public class Display extends Application {
-    private Stage primaryStage;
-    private Scene scene;
     private Group root;
     private Label scoreLabel;
-    private Rectangle brickRect = null;
-    int brickY = 0;
-    AnimationTimer gameLoop;
-    Long lastUpdate = null;
+    private List<BrickDisplay> brickDisplayList = new LinkedList<>();
 
+    private AnimationTimer gameLoop;
+    private Long lastUpdate = null;
+
+    Engine engine;
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -40,16 +45,20 @@ public class Display extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        System.out.println("Display.start");
+        // init game engine
+        engine = new Engine();
+        // init Display
+        System.out.println("Display.start()");
         System.out.println(Constants.DisplayConst.toStringStatic());
-        this.primaryStage = primaryStage;
-        // set main window parameters
-        setWindowParameters();
+        // make root
+        root = new Group();
         // setup scene
-        setupScene();
-        // run
+        Scene scene = setupScene();
         primaryStage.setScene(scene);
+        // run
         primaryStage.show();
+        // set main window parameters (after show() to access actual window size)
+        setWindowParameters(primaryStage);
     }
 
     void startGame() {
@@ -60,25 +69,39 @@ public class Display extends Application {
                     lastUpdate = now;
                 }
                 if (now - lastUpdate >= DELAY_SECONDS * 1_000_000_000.0) {
-                    if (brickRect != null) {
-                        brickRect.setTranslateY(brickY += BRICK_DISPLAY_SIZE_ACTUAL);
+                    // make step with selected action (no action for now) and get result
+                    StepResult stepResult = engine.step();
+                    // update position in all elements
+                    // for now just erase old and replace with new ones. ughh.
+                    for (BrickDisplay brick : brickDisplayList) {
+                        root.getChildren().remove(brick);
                     }
-                    lastUpdate = now ;
+                    for (Brick brick : stepResult.bricks){
+                        BrickDisplay brickDisplay = new BrickDisplay(brick);
+                        brickDisplayList.add(brickDisplay);
+                        root.getChildren().add(brickDisplay);
+                    }
+                    lastUpdate = now;
                 }
+//                if (now - lastUpdate >= DELAY_SECONDS * 1_000_000_000.0) {
+//                    if (brickRect != null) {
+//                        brickRect.setTranslateY(brickY += BRICK_DISPLAY_SIZE_ACTUAL);
+//                    }
+//                    lastUpdate = now ;
+//                }
             }
         };
         gameLoop.start();
     }
 
-    public void setupScene() {
-        root = new Group();
-        scene = new Scene(root, SCENE_SIZE_X, SCENE_SIZE_Y, Color.web(SCENE_BACKGROUND_COLOR));
-        var children = root.getChildren();
+    public Scene setupScene() {
+        Scene scene = new Scene(root, SCENE_SIZE_X, SCENE_SIZE_Y, Color.web(SCENE_BACKGROUND_COLOR));
+        var rootChildren = root.getChildren();
         // setup game field
         Rectangle gameField = new Rectangle(GAME_FIELD_DISPLAY_MARGIN, GAME_FIELD_DISPLAY_MARGIN,
                 GAME_FIELD_DISPLAY_SIZE_X, GAME_FIELD_DISPLAY_SIZE_Y);
         gameField.setFill(Color.web(GAME_FIELD_BACKGROUND_COLOR));
-        children.add(gameField);
+        rootChildren.add(gameField);
         // setup right menu
         // Score label
         scoreLabel = new Label("Score: ");
@@ -86,29 +109,60 @@ public class Display extends Application {
         scoreLabel.setLayoutY(GAME_FIELD_DISPLAY_MARGIN);
         scoreLabel.setTextFill(Color.WHITESMOKE);
         scoreLabel.setFont(Font.font("Trebuchet MS", FontWeight.NORMAL, FontPosture.REGULAR, 20));
-        children.add(scoreLabel);
+        rootChildren.add(scoreLabel);
         // Some labels for evolution (later)
 
         // buttons
         Button startButton = new Button("Start");
         startButton.setLayoutX(SCENE_SIZE_X - 150);
-        startButton.setLayoutY(SCENE_SIZE_Y >> 1);    // what happens here? with the >> operator
+        startButton.setLayoutY(SCENE_SIZE_Y / 2);
+        startButton.setDefaultButton(false);
+        startButton.setFocusTraversable(false);
         startButton.setOnAction(this::startButtonClicked);
-        children.add(startButton);
+        rootChildren.add(startButton);
+        // keyboard listener
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, this::keyboardListener);
+
+        return scene;
     }
 
-    public void startButtonClicked(ActionEvent e) {
-        Brick brick = new Brick(new Position(0,0), tetris.environment.engine.Color.red);
-        brickRect = BrickDisplay.getBrickDisplay(brick);
-        root.getChildren().add(brickRect);
+    private void keyboardListener(Event e) {
+        KeyCode keyCode = ((KeyEvent) e).getCode();
+        if (keyCode == KeyCode.LEFT) {
+            System.out.println("left");
+        } else if (keyCode == KeyCode.RIGHT) {
+            System.out.println("right");
+        } else if (keyCode == KeyCode.DOWN) {
+            System.out.println("down");
+        } else if (keyCode == KeyCode.SPACE) {
+            System.out.println("space");
+        }
+    }
+
+    /**
+     * Starts the game.
+     *
+     */
+    private void startButtonClicked(ActionEvent e) {
+        // set initial state of environment and get first observation
+        StepResult stepResult = engine.reset();
+        // make BrickDisplay add to the list and to the root
+        for(var brick : stepResult.bricks){
+            BrickDisplay brickDisplay = new BrickDisplay(brick);
+            brickDisplayList.add(brickDisplay);
+            root.getChildren().add(brickDisplay);
+        }
+        // start game
         startGame();
     }
 
-    public void setWindowParameters() {
-        primaryStage.setMaxHeight(SCENE_SIZE_Y + GAME_FIELD_DISPLAY_MARGIN * 1.5);
-        primaryStage.setMaxWidth(SCENE_SIZE_X + GAME_FIELD_DISPLAY_MARGIN);
-        primaryStage.setMinHeight(SCENE_SIZE_Y + GAME_FIELD_DISPLAY_MARGIN * 1.5);
-        primaryStage.setMinWidth(SCENE_SIZE_X + GAME_FIELD_DISPLAY_MARGIN);
+    private void setWindowParameters(Stage primaryStage) {
+        var height = primaryStage.getHeight();
+        var width = primaryStage.getWidth();
+        primaryStage.setMaxHeight(height);
+        primaryStage.setMaxWidth(width);
+        primaryStage.setMinHeight(height);
+        primaryStage.setMinWidth(width);
         primaryStage.setTitle("TetrisAI");
     }
 

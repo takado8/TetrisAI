@@ -7,7 +7,7 @@ public class Constants {
      */
     public static class EngineConst {
         public final static int GAME_FIELD_SIZE_X = 10;
-        public final static int GAME_FIELD_SIZE_Y = 10;
+        public final static int GAME_FIELD_SIZE_Y = 20;
         public final static int GAME_FIELD_EMPTY = 0;
         public final static int GAME_FIELD_BRICK_STATIC = 1;
         public final static int GAME_FIELD_BRICK_FALLING = 2;
@@ -19,16 +19,17 @@ public class Constants {
     public static class DisplayConst {
         public static final String SCENE_BACKGROUND_COLOR = "#222222";
         public static final String GAME_FIELD_BACKGROUND_COLOR = "#4e4e50";
-        public static final String BRICK_STROKE_COLOR = "#ffffff";
+        public static final String BRICK_STROKE_COLOR = "#000000";
 
-        public static final int SCENE_SIZE_Y = 556;
-        public static final int SCENE_SIZE_X = 500;
-        public static final int GAME_FIELD_DISPLAY_SIZE_Y = (int)(SCENE_SIZE_Y * 0.90);
-        public static final int GAME_FIELD_DISPLAY_SIZE_X = GAME_FIELD_DISPLAY_SIZE_Y / 2;
-        public static final int GAME_FIELD_DISPLAY_MARGIN = 20;
-        public static final double BRICK_STROKE_WIDTH = 1;
-        public static final double BRICK_DISPLAY_SIZE_ACTUAL = (double) GAME_FIELD_DISPLAY_SIZE_X / EngineConst.GAME_FIELD_SIZE_X;
-        public static final double BRICK_DISPLAY_SIZE_ADJUSTED = BRICK_DISPLAY_SIZE_ACTUAL - BRICK_STROKE_WIDTH * 2;
+        public static final double SCENE_SIZE_Y = 650;
+        public static final double SCENE_SIZE_X = 550;
+        public static final double GAME_FIELD_MARGIN_PERCENT = 0.09;  // %
+        public static final double GAME_FIELD_DISPLAY_SIZE_Y = SCENE_SIZE_Y * (1 - GAME_FIELD_MARGIN_PERCENT);
+        public static final double GAME_FIELD_DISPLAY_SIZE_X = GAME_FIELD_DISPLAY_SIZE_Y / 2;
+        public static final double GAME_FIELD_DISPLAY_MARGIN = (SCENE_SIZE_Y - GAME_FIELD_DISPLAY_SIZE_Y) / 2;
+        public static final double BRICK_STROKE_WIDTH = 0.5;
+        public static final double BRICK_DISPLAY_SIZE_ACTUAL = GAME_FIELD_DISPLAY_SIZE_X / EngineConst.GAME_FIELD_SIZE_X;
+        public static final double BRICK_DISPLAY_SIZE_ADJUSTED = BRICK_DISPLAY_SIZE_ACTUAL - BRICK_STROKE_WIDTH;
         public static final double DELAY_SECONDS = 1;
 
         public static String toStringStatic() {

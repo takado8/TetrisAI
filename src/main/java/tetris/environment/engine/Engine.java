@@ -1,6 +1,9 @@
 package tetris.environment.engine;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static tetris.environment.Constants.EngineConst.*;
@@ -14,22 +17,17 @@ public class Engine {
     private Tetrimino fallingTetrimino;
     private int gameScore = 0;
     private int totalGameScore = 0;
+    private List<Brick> staticBricks = new LinkedList<>();
 
     public Engine() {
-        System.out.println("\nInitializing game engine...");
-        initGameField();
-        System.out.println("Finished initializing game engine\n");
-        reset();
+        System.out.println("\nInitializing game engine.");
     }
 
     /**
      * Take next step in environment
      */
-    public boolean step() {
-        // render
-        printGameFieldArr();
-        // some delay
-        sleep(1);
+    public StepResult step() {
+
         // take action from user/operator
         // (no action for now)
         // execute action
@@ -55,15 +53,16 @@ public class Engine {
                 addNewFallingTetriminoToGameField();
             }
         }
-        return isFinalStep;
+        return new StepResult(isFinalStep, fallingTetrimino, new ArrayList<>(staticBricks));
     }
 
     /**
      * Set environment to initial condition and return initial observation
      */
-    public void reset() {
+    public StepResult reset() {
         initGameField();
         addNewFallingTetriminoToGameField();
+        return new StepResult(false, fallingTetrimino, new ArrayList<>(staticBricks));
     }
 
     /**
@@ -121,6 +120,7 @@ public class Engine {
      */
     private void putDownTetrimino() {
         for (var brick : fallingTetrimino.getBricks()) {
+            staticBricks.add(brick);
             var position = brick.getPosition();
             gameFieldArr[position.getY()][position.getX()] = GAME_FIELD_BRICK_STATIC;
         }
@@ -205,11 +205,6 @@ public class Engine {
             // how to actually raise that exception?
             System.out.println(e.getMessage());
         }
-    }
-
-    // only to test new getGameFieldArr with copy
-    public int[][] getGameFieldArrNoCopy() {
-        return gameFieldArr;
     }
 
     public int[][] getGameFieldArr() {
