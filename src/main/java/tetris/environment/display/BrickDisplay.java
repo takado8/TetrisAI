@@ -13,7 +13,7 @@ import static tetris.environment.Constants.DisplayConst.*;
 public class BrickDisplay extends Rectangle {
     public final int id;
     public BrickDisplay(Brick brick) {
-        super(brick.getPosition().getX() * BRICK_DISPLAY_SIZE_ADJUSTED + GAME_FIELD_DISPLAY_MARGIN + BRICK_STROKE_WIDTH,
+        super(brick.getPosition().getX() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN + BRICK_STROKE_WIDTH,
                 brick.getPosition().getY() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN,
                 BRICK_DISPLAY_SIZE_ADJUSTED, BRICK_DISPLAY_SIZE_ADJUSTED);
         setFill(Color.INDIANRED);

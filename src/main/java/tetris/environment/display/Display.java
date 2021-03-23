@@ -17,11 +17,8 @@ import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import tetris.environment.Constants;
-import tetris.environment.engine.Brick;
-import tetris.environment.engine.Engine;
-import tetris.environment.engine.Position;
+import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
-import tetris.environment.engine.StepResult;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +34,7 @@ public class Display extends Application {
     private Long lastUpdate = null;
 
     Engine engine;
+    Direction directionClicked = null;
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -69,8 +67,9 @@ public class Display extends Application {
                     lastUpdate = now;
                 }
                 if (now - lastUpdate >= DELAY_SECONDS * 1_000_000_000.0) {
-                    // make step with selected action (no action for now) and get result
-                    StepResult stepResult = engine.step();
+                    // make step with selected action and get result
+                    StepResult stepResult = engine.step(directionClicked);
+                    directionClicked = null;
                     // update position in all elements
                     // for now just erase old and replace with new ones. ughh.
                     for (BrickDisplay brick : brickDisplayList) {
@@ -83,12 +82,6 @@ public class Display extends Application {
                     }
                     lastUpdate = now;
                 }
-//                if (now - lastUpdate >= DELAY_SECONDS * 1_000_000_000.0) {
-//                    if (brickRect != null) {
-//                        brickRect.setTranslateY(brickY += BRICK_DISPLAY_SIZE_ACTUAL);
-//                    }
-//                    lastUpdate = now ;
-//                }
             }
         };
         gameLoop.start();
@@ -129,11 +122,11 @@ public class Display extends Application {
     private void keyboardListener(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.LEFT) {
-            System.out.println("left");
+            directionClicked = Direction.left;
         } else if (keyCode == KeyCode.RIGHT) {
-            System.out.println("right");
+            directionClicked = Direction.right;
         } else if (keyCode == KeyCode.DOWN) {
-            System.out.println("down");
+            directionClicked = Direction.down;
         } else if (keyCode == KeyCode.SPACE) {
             System.out.println("space");
         }

@@ -26,16 +26,15 @@ public class Engine {
     /**
      * Take next step in environment
      */
-    public StepResult step() {
-
+    public StepResult step(Direction direction) {
         // take action from user/operator
-        // (no action for now)
-        // execute action
-        // (no action for now)
+        if(direction != null && canMove(direction)){
+            move(direction);
+        }
         // move piece down (every turn)
         boolean isFinalStep = false;
         if (canMoveDown()) {
-            moveDown();
+            move(Direction.down);
         } else {
             putDownTetrimino();
             // check if any lines are completed
@@ -53,7 +52,7 @@ public class Engine {
                 addNewFallingTetriminoToGameField();
             }
         }
-        return new StepResult(isFinalStep, fallingTetrimino, new ArrayList<>(staticBricks));
+        return new StepResult(isFinalStep, fallingTetrimino, new LinkedList<>(staticBricks));
     }
 
     /**
@@ -62,7 +61,8 @@ public class Engine {
     public StepResult reset() {
         initGameField();
         addNewFallingTetriminoToGameField();
-        return new StepResult(false, fallingTetrimino, new ArrayList<>(staticBricks));
+        staticBricks.clear();
+        return new StepResult(false, fallingTetrimino, new LinkedList<>(staticBricks));
     }
 
     /**
@@ -130,7 +130,15 @@ public class Engine {
     /**
      * Moves down {@code fallingTetrimino}
      */
-    private void moveDown() {
+    private void move(Direction direction) {
+        int addX;
+        int addY;
+        switch (direction) {
+            case down: addX = 0; addY = 1; break;
+            case left: addX = -1; addY = 0; break;
+            case right: addX = 1; addY = 0; break;
+            default: return;
+        }
         Brick[] bricks = fallingTetrimino.getBricks();
         Position[] newPositions = new Position[4];
         // get new positions and erase old bricks
@@ -140,8 +148,9 @@ public class Engine {
             var x = position.getX();
             var y = position.getY();
             // draw brick in new position
-            var new_y = y + 1;
-            var newPosition = new Position(x, new_y);
+            var new_y = y + addY;
+            var new_x = x + addX;
+            var newPosition = new Position(new_x, new_y);
             newPositions[i] = newPosition;
             // erase old brick from array
             gameFieldArr[y][x] = GAME_FIELD_EMPTY;
@@ -152,6 +161,35 @@ public class Engine {
         for (var newPosition : newPositions) {
             gameFieldArr[newPosition.getY()][newPosition.getX()] = GAME_FIELD_BRICK_FALLING;
         }
+    }
+
+    /**
+     * Checks if {@code fallingTetrimino} can move in {@code Direction}
+     *
+     * @return true if can, false otherwise
+     */
+    private boolean canMove(Direction direction) {
+        int addX;
+        switch (direction) {
+            case left:
+                addX = -1;
+                break;
+            case right:
+                addX = 1;
+                break;
+            default:
+                return false;
+        }
+
+        for (var brick : fallingTetrimino.getBricks()) {
+            var pos = brick.getPosition();
+            var newX = pos.getX() + addX;
+            if (newX >= GAME_FIELD_SIZE_X || newX < 0 ||
+                    gameFieldArr[pos.getY()][newX] == GAME_FIELD_BRICK_STATIC) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
