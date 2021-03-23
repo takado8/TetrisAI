@@ -26,7 +26,7 @@ public class Tetrimino {
             Shuffle();
             shape_index = 0;
         }
-        shape = I;// shapes[shape_index++];
+        shape = shapes[shape_index++];
         // construct tetrimino from bricks.
         // get game field middle for tetrimino spawn position
         int gameFieldMiddleX = GAME_FIELD_SIZE_X / 2;

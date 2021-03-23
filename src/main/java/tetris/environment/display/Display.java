@@ -82,6 +82,7 @@ public class Display extends Application {
                     }
                     lastUpdate = now;
                 }
+
             }
         };
         gameLoop.start();
