@@ -22,35 +22,32 @@ public class Engine {
     /**
      * Take next step in environment
      */
-    public StepResult step(Direction direction) {
-        // print arr
-//        printGameFieldArr();
-        // take action from user/operator
-        if(direction != null && canMove(direction)){
-            move(direction);
+    public StepResult step(Action action) {
+        printGameFieldArr();
+        // check if the game is over
+        if (checkGameOver()) {
+            // game is over
+            totalGameScore += gameScore;
+            gameScore = 0;
+            System.out.println("> GAME OVER <");
+            return new StepResult(true, fallingTetrimino, new ArrayList<>(stableBricksDict.values()));
         }
-        // move piece down (every turn)
-        boolean isFinalStep = false;
+        // game is not over
+        // execute action from user/operator
+        // move tetrimino left/right
+        if (action != null && canMove(action)) {
+            move(action);
+        }
+        // move tetrimino down (every turn)
         if (canMoveDown()) {
-            move(Direction.down);
+            move(Action.moveDown);
         } else {
             putDownTetrimino();
-            // check if any lines are completed
-            int stepScore = checkLinesCompleted();
+            // check if any lines are completed, remove them, return number of removed.
+            int stepScore = checkAndRemoveLinesCompleted();
             gameScore += stepScore;
-            // check if the game is over
-            if (checkGameOver()) {
-                // game is over
-                isFinalStep = true;
-                totalGameScore += gameScore;
-                gameScore = 0;
-                System.out.println("> GAME OVER <");
-            } else {
-                // game is not over, add new tetrimino
-                addNewFallingTetriminoToGameField();
-            }
         }
-        return new StepResult(isFinalStep, fallingTetrimino, new ArrayList<>(stableBricksDict.values()));
+        return new StepResult(false, fallingTetrimino, new ArrayList<>(stableBricksDict.values()));
     }
 
     /**
@@ -68,24 +65,25 @@ public class Engine {
      *
      * @return number of cleared lines
      */
-    private int checkLinesCompleted() {
+    private int checkAndRemoveLinesCompleted() {
         // if sum of values in line equals full possible line value, than line is complete
         int clearedLines = 0;
-        int lineMaxValue = GAME_FIELD_SIZE_X * GAME_FIELD_BRICK_STABLE;
         // loop through the game field array bottom up
         for (int y = gameFieldArr.length - 1; y >= 0; y--) {
-            // sum line
-            int lineValue = 0;
+            // sum stableBricks in line
+            int lineStableBricks = 0;
             for (int value : gameFieldArr[y]) {
-                lineValue += value;
+                if (value == GAME_FIELD_BRICK_STABLE) {
+                    lineStableBricks++;
+                }
             }
             // check if line is complete
-            if (lineValue == lineMaxValue) {
+            if (lineStableBricks == GAME_FIELD_SIZE_X) {
                 // line is complete
                 clearedLines++;
                 // clear bricks from stableBrickDict
                 for (int x = 0; x < gameFieldArr[y].length; x++) {
-                    Position pos = new Position(x,y);
+                    Position pos = new Position(x, y);
                     stableBricksDict.remove(pos);
                 }
                 // move all the above lines down, by one row, starting from cleared index
@@ -93,11 +91,11 @@ public class Engine {
                 for (int k = y; k > 0; k--) {
                     gameFieldArr[k] = gameFieldArr[k - 1];
                     for (int i = 0; i < gameFieldArr[k].length; i++) {
-                        Position oldPos = new Position(i,k-1);
+                        Position oldPos = new Position(i, k - 1);
                         Brick oldBrick = stableBricksDict.get(oldPos);
-                        if(oldBrick != null){
+                        if (oldBrick != null) {
                             stableBricksDict.remove(oldPos);
-                            Position newPos = new Position(i,k);
+                            Position newPos = new Position(i, k);
                             oldBrick.setPosition(newPos);
                             stableBricksDict.put(newPos, oldBrick);
                         }
@@ -113,13 +111,13 @@ public class Engine {
     }
 
     /**
-     * Checks if any brick touches top of the map
+     * Checks if any stable brick touches top of the map
      *
      * @return true if it does, false otherwise
      */
     private boolean checkGameOver() {
         for (var position : gameFieldArr[0]) {
-            if (position != 0) {
+            if (position == GAME_FIELD_BRICK_STABLE) {
                 return true;
             }
         }
@@ -127,8 +125,8 @@ public class Engine {
     }
 
     /**
-     * Puts down tetrimino, changes field states from falling to stable and
-     * sets {@code fallingTetrimino} variable to null
+     * Changes {@code fallingTetrimino} {@code gameFieldArr} states from falling to stable, moves its Bricks to the
+     * {@code stableBricksDict} and adds new {@code fallingTetrimino} to the game field
      */
     private void putDownTetrimino() {
         for (var brick : fallingTetrimino.getBricks()) {
@@ -136,20 +134,43 @@ public class Engine {
             stableBricksDict.put(position, brick);
             gameFieldArr[position.getY()][position.getX()] = GAME_FIELD_BRICK_STABLE;
         }
-        fallingTetrimino = null;
+
+        addNewFallingTetriminoToGameField();
+    }
+
+    private void addNewFallingTetriminoToGameField() {
+        fallingTetrimino = new Tetrimino();
+        // add tetrimino bricks to game field array
+        for (var brick : fallingTetrimino.getBricks()) {
+            var position = brick.getPosition();
+            // dont overwrite not empty values, changes result of checkGameOver()
+            if (gameFieldArr[position.getY()][position.getX()] == GAME_FIELD_EMPTY) {
+                gameFieldArr[position.getY()][position.getX()] = GAME_FIELD_BRICK_FALLING;
+            }
+        }
     }
 
     /**
      * Moves down {@code fallingTetrimino}
      */
-    private void move(Direction direction) {
+    private void move(Action action) {
         int addX;
         int addY;
-        switch (direction) {
-            case down: addX = 0; addY = 1; break;
-            case left: addX = -1; addY = 0; break;
-            case right: addX = 1; addY = 0; break;
-            default: return;
+        switch (action) {
+            case moveDown:
+                addX = 0;
+                addY = 1;
+                break;
+            case moveLeft:
+                addX = -1;
+                addY = 0;
+                break;
+            case moveRight:
+                addX = 1;
+                addY = 0;
+                break;
+            default:
+                return;
         }
         Brick[] bricks = fallingTetrimino.getBricks();
         Position[] newPositions = new Position[4];
@@ -180,13 +201,13 @@ public class Engine {
      *
      * @return true if can, false otherwise
      */
-    private boolean canMove(Direction direction) {
+    private boolean canMove(Action action) {
         int addX;
-        switch (direction) {
-            case left:
+        switch (action) {
+            case moveLeft:
                 addX = -1;
                 break;
-            case right:
+            case moveRight:
                 addX = 1;
                 break;
             default:
@@ -206,7 +227,7 @@ public class Engine {
     /**
      * Checks if {@code fallingTetrimino} can move down
      *
-     * @return true if can, false otherwise
+     * @return true if can,false otherwise and false if fallingTetrimino is null
      */
     private boolean canMoveDown() {
         for (var brick : fallingTetrimino.getBricks()) {
@@ -219,14 +240,6 @@ public class Engine {
         return true;
     }
 
-    private void addNewFallingTetriminoToGameField() {
-        fallingTetrimino = new Tetrimino();
-        // add tetrimino bricks to game field array
-        for (var brick : fallingTetrimino.getBricks()) {
-            var position = brick.getPosition();
-            gameFieldArr[position.getY()][position.getX()] = GAME_FIELD_BRICK_FALLING;
-        }
-    }
 
     /**
      * Init {@code gameFieldArr} with {@code GAME_FIELD_EMPTY} values

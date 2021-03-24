@@ -33,7 +33,7 @@ public class Tetrimino {
         // build tetrimino
         if (shape == I) {
             color = Color.blue;
-            int spawn_x =0;// gameFieldMiddleX - 2;  // spawn on middle top
+            int spawn_x = gameFieldMiddleX - 2;  // spawn on middle top
             for (int i = 0; i < 4; i++) {
                 var position = new Position(spawn_x + i, 0);
                 bricks[i] = new Brick(position, color);

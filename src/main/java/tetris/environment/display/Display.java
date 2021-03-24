@@ -1,9 +1,9 @@
 package tetris.environment.display;
 
+import com.sun.scenario.effect.impl.prism.PrRenderInfo;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
@@ -32,9 +32,10 @@ public class Display extends Application {
 
     private AnimationTimer gameLoop;
     private Long lastUpdate = null;
+    private double timeDelay = DELAY_SECONDS_NORMAL;
 
-    Engine engine;
-    Direction directionClicked = null;
+    private Engine engine;
+    private Action actionSelected = null;
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -66,10 +67,16 @@ public class Display extends Application {
                 if (lastUpdate == null) {
                     lastUpdate = now;
                 }
-                if (now - lastUpdate >= DELAY_SECONDS * 1_000_000_000.0) {
+                if (now - lastUpdate >= timeDelay * 1_000_000_000.0) {
                     // make step with selected action and get result
-                    StepResult stepResult = engine.step(directionClicked);
-                    directionClicked = null;
+                    StepResult stepResult = engine.step(actionSelected);
+                    if (stepResult.isFinalStep) {
+                        // reset environment
+                        gameLoop.stop();
+                        scoreLabel.setText("GAME OVER");
+                        return;
+                    }
+                    actionSelected = null;
                     // update position in all elements
                     // for now just erase old and replace with new ones. ughh.
                     for (BrickDisplay brick : brickDisplayList) {
@@ -116,36 +123,57 @@ public class Display extends Application {
         rootChildren.add(startButton);
         // keyboard listener
         scene.addEventFilter(KeyEvent.KEY_PRESSED, this::keyboardListener);
-
+        scene.addEventFilter(KeyEvent.KEY_RELEASED, this::keyboardListenerRelease);
         return scene;
+    }
+
+    private void keyboardListenerRelease(Event e){
+        KeyCode keyCode = ((KeyEvent) e).getCode();
+        if (keyCode == KeyCode.DOWN || keyCode == KeyCode.SPACE) {
+            timeDelay = DELAY_SECONDS_NORMAL;
+        }
     }
 
     private void keyboardListener(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.LEFT) {
-            directionClicked = Direction.left;
+            actionSelected = Action.moveLeft;
         } else if (keyCode == KeyCode.RIGHT) {
-            directionClicked = Direction.right;
+            actionSelected = Action.moveRight;
         } else if (keyCode == KeyCode.DOWN) {
-            directionClicked = Direction.down;
+            timeDelay = DELAY_SECONDS_SPEEDUP;
         } else if (keyCode == KeyCode.SPACE) {
-            System.out.println("space");
+            timeDelay = DELAY_SECONDS_DROP;
         }
     }
 
-    /**
-     * Starts the game.
-     *
-     */
-    private void startButtonClicked(ActionEvent e) {
-        // set initial state of environment and get first observation
+    private void reset() {
+        // clear root
+        for (BrickDisplay brick : brickDisplayList) {
+            root.getChildren().remove(brick);
+        }
+        // clear brick list
+        brickDisplayList.clear();
+        // reset timer
+        lastUpdate = null;
+        // clear action
+        actionSelected = null;
+        // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
-        // make BrickDisplay add to the list and to the root
+        // make BrickDisplays and add them to the list and to the root
         for(var brick : stepResult.bricks){
             BrickDisplay brickDisplay = new BrickDisplay(brick);
             brickDisplayList.add(brickDisplay);
             root.getChildren().add(brickDisplay);
         }
+    }
+
+    /**
+     * Starts the game.
+     */
+    private void startButtonClicked(ActionEvent e) {
+        // reset
+        reset();
         // start game
         startGame();
     }

@@ -30,7 +30,11 @@ public class Constants {
         public static final double BRICK_STROKE_WIDTH = 0.5;
         public static final double BRICK_DISPLAY_SIZE_ACTUAL = GAME_FIELD_DISPLAY_SIZE_X / EngineConst.GAME_FIELD_SIZE_X;
         public static final double BRICK_DISPLAY_SIZE_ADJUSTED = BRICK_DISPLAY_SIZE_ACTUAL - BRICK_STROKE_WIDTH;
-        public static final double DELAY_SECONDS = 0.3;
+        public static final double DELAY_SECONDS_SLOW = 0.75;
+        public static final double DELAY_SECONDS_NORMAL = 0.3;
+        public static final double DELAY_SECONDS_FAST = 0.3;
+        public static final double DELAY_SECONDS_SPEEDUP = 0.1;
+        public static final double DELAY_SECONDS_DROP = 0.01;
 
         public static String toStringStatic() {
             return "DisplayConst{" +
@@ -45,7 +49,7 @@ public class Constants {
                     ",\n BRICK_STROKE_WIDTH=" + BRICK_STROKE_WIDTH +
                     ",\n BRICK_DISPLAY_SIZE_ACTUAL=" + BRICK_DISPLAY_SIZE_ACTUAL +
                     ",\n BRICK_DISPLAY_SIZE_ADJUSTED=" + BRICK_DISPLAY_SIZE_ADJUSTED +
-                    ",\n DELAY_SECONDS=" + DELAY_SECONDS +
+                    ",\n DELAY_SECONDS=" + DELAY_SECONDS_NORMAL +
                     '}';
         }
     }
