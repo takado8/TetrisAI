@@ -23,19 +23,16 @@ public class Engine {
      * Take next step in environment
      */
     public StepResult step(Direction direction) {
-        printGameFieldArr();
         // check if the game is over
-        if (checkGameOver()) {
+        if (isGameOver()) {
             // game is over
-            totalGameScore += gameScore;
-            gameScore = 0;
-            System.out.println("> GAME OVER <");
+            handleGameOver();
+            // return final StepResult
             return new StepResult(true, fallingTetrimino, new ArrayList<>(stableBricksDict.values()));
         }
         // game is not over
-        // execute action from user/operator
-        // move tetrimino left/right
-        if (direction != null && canMove(direction)) {
+        // execute action from user/operator - move tetrimino left/right
+        if (canMove(direction)) {
             move(direction);
         }
         // move tetrimino down (every turn)
@@ -43,9 +40,9 @@ public class Engine {
             move(Direction.DOWN);
         } else {
             putDownTetrimino();
-            // check if any lines are completed, remove them, return number of removed.
-            int stepScore = checkAndRemoveLinesCompleted();
-            gameScore += stepScore;
+            // Remove completed lines and return number of them.
+            int completedLines = RemoveCompletedLines();
+            gameScore += completedLines;
         }
         return new StepResult(false, fallingTetrimino, new ArrayList<>(stableBricksDict.values()));
     }
@@ -65,7 +62,7 @@ public class Engine {
      *
      * @return number of cleared lines
      */
-    private int checkAndRemoveLinesCompleted() {
+    private int RemoveCompletedLines() {
         // if sum of values in line equals full possible line value, than line is complete
         int clearedLines = 0;
         // loop through the game field array bottom up
@@ -115,13 +112,18 @@ public class Engine {
      *
      * @return true if it does, false otherwise
      */
-    private boolean checkGameOver() {
+    private boolean isGameOver() {
         for (var position : gameFieldArr[0]) {
             if (position == GAME_FIELD_BRICK_STABLE) {
                 return true;
             }
         }
         return false;
+    }
+
+    private void handleGameOver() {
+        totalGameScore += gameScore;
+        gameScore = 0;
     }
 
     /**
@@ -154,20 +156,20 @@ public class Engine {
      * Moves down {@code fallingTetrimino}
      */
     private void move(Direction direction) {
-        int addX;
-        int addY;
+        int addToX;
+        int addToY;
         switch (direction) {
             case DOWN:
-                addX = 0;
-                addY = 1;
+                addToX = 0;
+                addToY = 1;
                 break;
             case LEFT:
-                addX = -1;
-                addY = 0;
+                addToX = -1;
+                addToY = 0;
                 break;
             case RIGHT:
-                addX = 1;
-                addY = 0;
+                addToX = 1;
+                addToY = 0;
                 break;
             default:
                 return;
@@ -181,8 +183,8 @@ public class Engine {
             var x = position.getX();
             var y = position.getY();
             // draw brick in a new position
-            var new_y = y + addY;
-            var new_x = x + addX;
+            var new_y = y + addToY;
+            var new_x = x + addToX;
             var newPosition = new Position(new_x, new_y);
             newPositions[i] = newPosition;
             // erase old brick from array
@@ -202,20 +204,20 @@ public class Engine {
      * @return true if can, false otherwise
      */
     private boolean canMove(Direction direction) {
-        int addX;
+        int addToX;
         switch (direction) {
             case LEFT:
-                addX = -1;
+                addToX = -1;
                 break;
             case RIGHT:
-                addX = 1;
+                addToX = 1;
                 break;
             default:
                 return false;
         }
         for (var brick : fallingTetrimino.getBricks()) {
             var pos = brick.getPosition();
-            var newX = pos.getX() + addX;
+            var newX = pos.getX() + addToX;
             if (newX >= GAME_FIELD_SIZE_X || newX < 0 ||
                     gameFieldArr[pos.getY()][newX] == GAME_FIELD_BRICK_STABLE) {
                 return false;

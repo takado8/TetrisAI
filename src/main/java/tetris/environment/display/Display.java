@@ -19,6 +19,7 @@ import tetris.environment.Constants;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,14 +28,14 @@ import static tetris.environment.Constants.DisplayConst.*;
 public class Display extends Application {
     private Group root;
     private Label scoreLabel;
-    private List<BrickDisplay> brickDisplayList = new LinkedList<>();
+    private final List<BrickDisplay> brickDisplayList = new ArrayList<>();
 
     private AnimationTimer gameLoop;
     private Long lastUpdate = null;
     private double timeDelay = DELAY_SECONDS_NORMAL;
 
     private Engine engine;
-    private Direction directionSelected = null;
+    private Direction directionSelected = Direction.NONE;
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -47,7 +48,7 @@ public class Display extends Application {
         engine = new Engine();
         // init Display
         System.out.println("Display.start()");
-        System.out.println(Constants.DisplayConst.toStringStatic());
+//        System.out.println(Constants.DisplayConst.toStringStatic());
         // make root
         root = new Group();
         // setup scene
@@ -75,7 +76,7 @@ public class Display extends Application {
                         scoreLabel.setText("GAME OVER");
                         return;
                     }
-                    directionSelected = null;
+                    directionSelected = Direction.NONE;
                     // update position in all elements
                     // for now just erase old and replace with new ones. ughh.
                     for (BrickDisplay brick : brickDisplayList) {
@@ -88,7 +89,6 @@ public class Display extends Application {
                     }
                     lastUpdate = now;
                 }
-
             }
         };
         gameLoop.start();
@@ -156,7 +156,7 @@ public class Display extends Application {
         // reset timer
         lastUpdate = null;
         // clear action
-        directionSelected = null;
+        directionSelected = Direction.NONE;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
         // make BrickDisplays and add them to the list and to the root

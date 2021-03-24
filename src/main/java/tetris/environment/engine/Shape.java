@@ -7,5 +7,5 @@ public enum Shape {
     L,
     J,
     S,
-    Z
+    Z,
 }

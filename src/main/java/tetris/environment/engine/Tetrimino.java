@@ -11,7 +11,7 @@ import static tetris.environment.Constants.EngineConst.GAME_FIELD_SIZE_X;
  * randomly in 1 of 7 arrangements.
  */
 public class Tetrimino {
-    private static final Random random = new Random(); // or should be declared static only once for the whole project?
+    private static final Random random = new Random();
     private static final Shape[] shapes = {I, O, T, L, J, S, Z};
     private static int shape_index = shapes.length;
 
