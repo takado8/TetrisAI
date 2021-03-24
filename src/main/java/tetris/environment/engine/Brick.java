@@ -10,11 +10,6 @@ public class Brick {
     public final Color color;
     private Position position;
 
-    public Brick(Position position) {
-        this.position = position;
-        this.color = null; // is it bad?
-    }
-
     public Brick(Position position, Color color) {
         this.position = position;
         this.color = color;
