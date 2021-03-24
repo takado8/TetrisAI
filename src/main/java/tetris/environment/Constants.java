@@ -17,9 +17,9 @@ public class Constants {
      * {@code Display} constants
      */
     public static class DisplayConst {
-        public static final String SCENE_BACKGROUND_COLOR = "#222222";
-        public static final String GAME_FIELD_BACKGROUND_COLOR = "#4e4e50";
-        public static final String BRICK_STROKE_COLOR = "#000000";
+        public static final String SCENE_BACKGROUND_COLOR_HEX = "#222222";
+        public static final String GAME_FIELD_BACKGROUND_COLOR_HEX = "#4e4e50";
+        public static final String BRICK_STROKE_COLOR_HEX = "#000000";
 
         public static final double SCENE_SIZE_Y = 650;
         public static final double SCENE_SIZE_X = 550;
@@ -38,9 +38,9 @@ public class Constants {
 
         public static String toStringStatic() {
             return "DisplayConst{" +
-                    "SCENE_BACKGROUND_COLOR='" + SCENE_BACKGROUND_COLOR + '\'' +
-                    ",\n GAME_FIELD_BACKGROUND_COLOR='" + GAME_FIELD_BACKGROUND_COLOR + '\'' +
-                    ",\n BRICK_STROKE_COLOR='" + BRICK_STROKE_COLOR + '\'' +
+                    "SCENE_BACKGROUND_COLOR='" + SCENE_BACKGROUND_COLOR_HEX + '\'' +
+                    ",\n GAME_FIELD_BACKGROUND_COLOR='" + GAME_FIELD_BACKGROUND_COLOR_HEX + '\'' +
+                    ",\n BRICK_STROKE_COLOR='" + BRICK_STROKE_COLOR_HEX + '\'' +
                     ",\n SCENE_SIZE_Y=" + SCENE_SIZE_Y +
                     ",\n SCENE_SIZE_X=" + SCENE_SIZE_X +
                     ",\n GAME_FIELD_DISPLAY_SIZE_Y=" + GAME_FIELD_DISPLAY_SIZE_Y +

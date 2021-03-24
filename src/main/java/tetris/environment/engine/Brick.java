@@ -7,10 +7,10 @@ public class Brick {
     private static int idCounter = 0;
 
     public final int id = idCounter++;
-    public final Color color;
+    public final String color;
     private Position position;
 
-    public Brick(Position position, Color color) {
+    public Brick(Position position, String color) {
         this.position = position;
         this.color = color;
     }

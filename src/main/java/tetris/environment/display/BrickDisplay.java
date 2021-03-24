@@ -16,11 +16,11 @@ public class BrickDisplay extends Rectangle {
         super(brick.getPosition().getX() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN + BRICK_STROKE_WIDTH,
                 brick.getPosition().getY() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN,
                 BRICK_DISPLAY_SIZE_ADJUSTED, BRICK_DISPLAY_SIZE_ADJUSTED);
-        setFill(Color.INDIANRED);
+        setFill(Color.web(brick.color));
         setArcWidth(5);
         setArcHeight(5);
         setStrokeWidth(BRICK_STROKE_WIDTH);
-        setStroke(Color.web(BRICK_STROKE_COLOR));
+        setStroke(Color.web(BRICK_STROKE_COLOR_HEX));
         this.id = brick.id;
     }
 

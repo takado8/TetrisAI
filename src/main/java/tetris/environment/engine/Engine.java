@@ -22,7 +22,7 @@ public class Engine {
     /**
      * Take next step in environment
      */
-    public StepResult step(Action action) {
+    public StepResult step(Direction direction) {
         printGameFieldArr();
         // check if the game is over
         if (checkGameOver()) {
@@ -35,12 +35,12 @@ public class Engine {
         // game is not over
         // execute action from user/operator
         // move tetrimino left/right
-        if (action != null && canMove(action)) {
-            move(action);
+        if (direction != null && canMove(direction)) {
+            move(direction);
         }
         // move tetrimino down (every turn)
         if (canMoveDown()) {
-            move(Action.moveDown);
+            move(Direction.DOWN);
         } else {
             putDownTetrimino();
             // check if any lines are completed, remove them, return number of removed.
@@ -153,19 +153,19 @@ public class Engine {
     /**
      * Moves down {@code fallingTetrimino}
      */
-    private void move(Action action) {
+    private void move(Direction direction) {
         int addX;
         int addY;
-        switch (action) {
-            case moveDown:
+        switch (direction) {
+            case DOWN:
                 addX = 0;
                 addY = 1;
                 break;
-            case moveLeft:
+            case LEFT:
                 addX = -1;
                 addY = 0;
                 break;
-            case moveRight:
+            case RIGHT:
                 addX = 1;
                 addY = 0;
                 break;
@@ -201,13 +201,13 @@ public class Engine {
      *
      * @return true if can, false otherwise
      */
-    private boolean canMove(Action action) {
+    private boolean canMove(Direction direction) {
         int addX;
-        switch (action) {
-            case moveLeft:
+        switch (direction) {
+            case LEFT:
                 addX = -1;
                 break;
-            case moveRight:
+            case RIGHT:
                 addX = 1;
                 break;
             default:

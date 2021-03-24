@@ -1,6 +1,5 @@
 package tetris.environment.display;
 
-import com.sun.scenario.effect.impl.prism.PrRenderInfo;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -35,7 +34,7 @@ public class Display extends Application {
     private double timeDelay = DELAY_SECONDS_NORMAL;
 
     private Engine engine;
-    private Action actionSelected = null;
+    private Direction directionSelected = null;
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -69,14 +68,14 @@ public class Display extends Application {
                 }
                 if (now - lastUpdate >= timeDelay * 1_000_000_000.0) {
                     // make step with selected action and get result
-                    StepResult stepResult = engine.step(actionSelected);
+                    StepResult stepResult = engine.step(directionSelected);
                     if (stepResult.isFinalStep) {
                         // reset environment
                         gameLoop.stop();
                         scoreLabel.setText("GAME OVER");
                         return;
                     }
-                    actionSelected = null;
+                    directionSelected = null;
                     // update position in all elements
                     // for now just erase old and replace with new ones. ughh.
                     for (BrickDisplay brick : brickDisplayList) {
@@ -96,12 +95,12 @@ public class Display extends Application {
     }
 
     public Scene setupScene() {
-        Scene scene = new Scene(root, SCENE_SIZE_X, SCENE_SIZE_Y, Color.web(SCENE_BACKGROUND_COLOR));
+        Scene scene = new Scene(root, SCENE_SIZE_X, SCENE_SIZE_Y, Color.web(SCENE_BACKGROUND_COLOR_HEX));
         var rootChildren = root.getChildren();
         // setup game field
         Rectangle gameField = new Rectangle(GAME_FIELD_DISPLAY_MARGIN, GAME_FIELD_DISPLAY_MARGIN,
                 GAME_FIELD_DISPLAY_SIZE_X, GAME_FIELD_DISPLAY_SIZE_Y);
-        gameField.setFill(Color.web(GAME_FIELD_BACKGROUND_COLOR));
+        gameField.setFill(Color.web(GAME_FIELD_BACKGROUND_COLOR_HEX));
         rootChildren.add(gameField);
         // setup right menu
         // Score label
@@ -137,9 +136,9 @@ public class Display extends Application {
     private void keyboardListener(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.LEFT) {
-            actionSelected = Action.moveLeft;
+            directionSelected = Direction.LEFT;
         } else if (keyCode == KeyCode.RIGHT) {
-            actionSelected = Action.moveRight;
+            directionSelected = Direction.RIGHT;
         } else if (keyCode == KeyCode.DOWN) {
             timeDelay = DELAY_SECONDS_SPEEDUP;
         } else if (keyCode == KeyCode.SPACE) {
@@ -157,7 +156,7 @@ public class Display extends Application {
         // reset timer
         lastUpdate = null;
         // clear action
-        actionSelected = null;
+        directionSelected = null;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
         // make BrickDisplays and add them to the list and to the root
