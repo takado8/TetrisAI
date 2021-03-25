@@ -1,11 +1,11 @@
 package tetris.environment.engine;
 
 public enum Shape {
-    I,
-    O,
-    T,
-    L,
-    J,
-    S,
-    Z,
+    SHAPE_I,
+    SHAPE_O,
+    SHAPE_T,
+    SHAPE_L,
+    SHAPE_J,
+    SHAPE_S,
+    SHAPE_Z,
 }

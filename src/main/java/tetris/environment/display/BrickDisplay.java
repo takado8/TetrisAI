@@ -12,11 +12,11 @@ import static tetris.environment.Constants.DisplayConst.*;
  */
 public class BrickDisplay extends Rectangle {
     public final int id;
+
     public BrickDisplay(Brick brick) {
-        super(brick.getPosition().getX() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN + BRICK_STROKE_WIDTH,
-                brick.getPosition().getY() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN,
+        super(translatePositionX(brick), translatePositionY(brick),
                 BRICK_DISPLAY_SIZE_ADJUSTED, BRICK_DISPLAY_SIZE_ADJUSTED);
-        setFill(Color.web(brick.color));
+        setFill(Color.web(brick.color.getHexString()));
         setArcWidth(5);
         setArcHeight(5);
         setStrokeWidth(BRICK_STROKE_WIDTH);
@@ -24,5 +24,18 @@ public class BrickDisplay extends Rectangle {
         this.id = brick.id;
     }
 
+    /**
+     * Translates game x position to actual graphic rendering position on game window.
+     */
+    private static double translatePositionX(Brick brick) {
+        return brick.getPosition().getX() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN + BRICK_STROKE_WIDTH;
+    }
+
+    /**
+     * Translates game y position to actual graphic rendering position on game window.
+     */
+    private static double translatePositionY(Brick brick) {
+        return brick.getPosition().getY() * BRICK_DISPLAY_SIZE_ACTUAL + GAME_FIELD_DISPLAY_MARGIN;
+    }
 
 }

@@ -15,12 +15,9 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import tetris.environment.Constants;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
-
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static tetris.environment.Constants.DisplayConst.*;
@@ -31,7 +28,7 @@ public class Display extends Application {
     private final List<BrickDisplay> brickDisplayList = new ArrayList<>();
 
     private AnimationTimer gameLoop;
-    private Long lastUpdate = null;
+    private Long lastUpdate = 0L;
     private double timeDelay = DELAY_SECONDS_NORMAL;
 
     private Engine engine;
@@ -64,7 +61,7 @@ public class Display extends Application {
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (lastUpdate == null) {
+                if (lastUpdate == 0L) {
                     lastUpdate = now;
                 }
                 if (now - lastUpdate >= timeDelay * 1_000_000_000.0) {
@@ -154,7 +151,7 @@ public class Display extends Application {
         // clear brick list
         brickDisplayList.clear();
         // reset timer
-        lastUpdate = null;
+        lastUpdate = 0L;
         // clear action
         directionSelected = Direction.NONE;
         // set initial state of game environment and get first observation
