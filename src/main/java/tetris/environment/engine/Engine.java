@@ -64,36 +64,39 @@ public class Engine {
             }
         }
         //endregion
-        // check if the game is over
-        if (isGameOver()) {
-            // game is over
-            handleGameOver();
-            // return final StepResult
-            return new StepResult(true, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
-        }
-        // game is not over
         // execute action from user/operator - rotate or move tetrimino left/right
+        // allowed indefinitely during turn, user decides when to end turn by choosing action NEXT_TURN
+        boolean tetriminoDropped = false;
         if (action == Action.ROTATE) {
             rotateFallingTetrimino();
         } else if (canMove(action)) {
             move(action);
-        }
-        // move tetrimino down (every turn)
-        if (canMoveDown()) {
-            move(Action.MOVE_DOWN);
-        } else {
-            putDownTetrimino();
-            // Remove completed lines and return number of them.
-            try {
-                int completedLines = RemoveCompletedLines();
-                gameScore += completedLines;
-            } catch (Error e) {
-                System.out.println(e.getMessage());
-                System.exit(-1);
+        } else if (action == Action.END_TURN) {
+            // move tetrimino down (at the end of the turn)
+            if (canMoveDown()) {
+                move(Action.MOVE_DOWN);
+            } else {
+                tetriminoDropped = true;
+                putDownTetrimino();
+                // Remove completed lines and return number of them.
+                try {
+                    int completedLines = RemoveCompletedLines();
+                    gameScore += completedLines;
+                } catch (Error e) {
+                    System.out.println(e.getMessage());
+                    System.exit(-1);
+                }
+                addNewFallingTetriminoToGameField();
             }
-            addNewFallingTetriminoToGameField();
+            // check if the game is over
+            if (isGameOver()) {
+                // game is over
+                handleGameOver();
+                // return final StepResult
+                return new StepResult(true, tetriminoDropped, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
+            }
         }
-        return new StepResult(false, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
+        return new StepResult(false, tetriminoDropped, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
     }
 
     /**

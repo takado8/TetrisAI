@@ -7,22 +7,33 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StepResult {
-    public final boolean isFinalStep;
+    private final boolean isFinalStep;
+    private final List<Brick>  bricks;
+    private final boolean tetriminoDropped;
 
-    public final List<Brick>  bricks;
-
-    public StepResult(boolean isFinalStep, Tetrimino fallingTetrimino, List<Brick> staticBricks) {
+    public StepResult(boolean isFinalStep, boolean tetriminoDropped, Tetrimino fallingTetrimino, List<Brick> staticBricks) {
         this.isFinalStep = isFinalStep;
+        this.tetriminoDropped = tetriminoDropped;
         this.bricks = staticBricks;
         staticBricks.addAll(Arrays.asList(fallingTetrimino.getBricks()));
     }
 
-    public boolean isFinalStep() {
-        return isFinalStep;
+    public StepResult(boolean isFinalStep, Tetrimino fallingTetrimino, List<Brick> staticBricks) {
+        this.isFinalStep = isFinalStep;
+        this.tetriminoDropped = false;
+        this.bricks = staticBricks;
+        staticBricks.addAll(Arrays.asList(fallingTetrimino.getBricks()));
     }
 
     public List<Brick> getBricks() {
         return bricks;
     }
 
+    public boolean isFinalStep() {
+        return isFinalStep;
+    }
+
+    public boolean isTetriminoDropped() {
+        return tetriminoDropped;
+    }
 }

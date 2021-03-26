@@ -31,10 +31,12 @@ public class Constants {
         public static final double BRICK_DISPLAY_SIZE_ACTUAL = GAME_FIELD_DISPLAY_SIZE_X / EngineConst.GAME_FIELD_SIZE_X;
         public static final double BRICK_DISPLAY_SIZE_ADJUSTED = BRICK_DISPLAY_SIZE_ACTUAL - BRICK_STROKE_WIDTH;
         public static final double DELAY_SECONDS_SLOW = 0.75;
-        public static final double DELAY_SECONDS_NORMAL = 0.3;
+        public static final double DELAY_SECONDS_NORMAL = 0.5;
         public static final double DELAY_SECONDS_FAST = 0.3;
-        public static final double DELAY_SECONDS_SPEEDUP = 0.1;
+        public static final double DELAY_SECONDS_SPEEDUP = 0.05;
         public static final double DELAY_SECONDS_DROP = 0.01;
+        public static final double RESPONSE_DELAY_SECONDS = 0.1;
+
 
         public static String toStringStatic() {
             return "DisplayConst{" +

@@ -17,8 +17,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
+import tetris.environment.engine.Action;
 import tetris.environment.engine.tetrimino.Brick;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,7 @@ public class Display extends Application {
 
     private AnimationTimer gameLoop;
     private Long lastUpdate = 0L;
+    private Long lastResponseUpdate = 0L;
     private double timeDelay = DELAY_SECONDS_NORMAL;
 
     private Engine engine;
@@ -58,6 +61,14 @@ public class Display extends Application {
         setWindowParameters(primaryStage);
     }
 
+    private boolean isTimeToEndTurn(long now) {
+        return now - lastUpdate >= timeDelay * 1_000_000_000.0;
+    }
+
+    private boolean isTimeToRespond(long now) {
+        return now - lastResponseUpdate >= RESPONSE_DELAY_SECONDS * 1_000_000_000.0;
+    }
+
     void startGame() {
         gameLoop = new AnimationTimer() {
             @Override
@@ -65,31 +76,53 @@ public class Display extends Application {
                 if (lastUpdate == 0L) {
                     lastUpdate = now;
                 }
-                if (now - lastUpdate >= timeDelay * 1_000_000_000.0) {
-                    // make step with selected action and get result
-                    StepResult stepResult = engine.step(actionSelected);
-                    if (stepResult.isFinalStep) {
-                        // reset environment
+                if (lastResponseUpdate == 0L) {
+                    lastResponseUpdate = now;
+                }
+                if (isTimeToEndTurn(now)) {
+                    // end turn, get result
+                    StepResult step_ = engine.step(actionSelected);
+                    StepResult stepResult = engine.step(Action.END_TURN);
+                    if (stepResult.isFinalStep()) {
+                        // stop the environment
                         gameLoop.stop();
                         scoreLabel.setText("GAME OVER");
                         return;
                     }
-                    actionSelected = Action.NONE;
-                    // update position in all elements
-                    // for now just erase old and replace with new ones. ughh.
-                    for (BrickDisplay brick : brickDisplayList) {
-                        root.getChildren().remove(brick);
+                    if (stepResult.isTetriminoDropped()) {
+                        timeDelay = DELAY_SECONDS_NORMAL;
                     }
-                    for (Brick brick : stepResult.bricks) {
-                        BrickDisplay brickDisplay = new BrickDisplay(brick);
-                        brickDisplayList.add(brickDisplay);
-                        root.getChildren().add(brickDisplay);
+                    if (actionSelected == Action.ROTATE) {
+                        actionSelected = Action.NONE;
                     }
+                    updateDisplay(stepResult);
                     lastUpdate = now;
+                }
+                if (isTimeToRespond(now)) {
+                    // make action selected by user
+                    StepResult stepResult = engine.step(actionSelected);
+                    if (actionSelected == Action.ROTATE) {
+                        actionSelected = Action.NONE;
+                    }
+                    updateDisplay(stepResult);
+                    lastResponseUpdate = now;
                 }
             }
         };
         gameLoop.start();
+    }
+
+    private void updateDisplay(StepResult stepResult) {
+        // update position in all elements
+        // for now just erase old and replace with new ones. ughh.
+        for (BrickDisplay brick : brickDisplayList) {
+            root.getChildren().remove(brick);
+        }
+        for (Brick brick : stepResult.getBricks()) {
+            BrickDisplay brickDisplay = new BrickDisplay(brick);
+            brickDisplayList.add(brickDisplay);
+            root.getChildren().add(brickDisplay);
+        }
     }
 
     public Scene setupScene() {
@@ -126,8 +159,11 @@ public class Display extends Application {
 
     private void keyboardListenerRelease(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
-        if (keyCode == KeyCode.DOWN || keyCode == KeyCode.SPACE) {
+        if (keyCode == KeyCode.DOWN) {
             timeDelay = DELAY_SECONDS_NORMAL;
+        }
+        if (keyCode == KeyCode.LEFT || keyCode == KeyCode.RIGHT) {
+            actionSelected = Action.NONE;
         }
     }
 
@@ -155,12 +191,13 @@ public class Display extends Application {
         brickDisplayList.clear();
         // reset timer
         lastUpdate = 0L;
+        lastResponseUpdate = 0L;
         // clear action
         actionSelected = Action.NONE;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
         // make BrickDisplays and add them to the list and to the root
-        for (var brick : stepResult.bricks) {
+        for (var brick : stepResult.getBricks()) {
             BrickDisplay brickDisplay = new BrickDisplay(brick);
             brickDisplayList.add(brickDisplay);
             root.getChildren().add(brickDisplay);
