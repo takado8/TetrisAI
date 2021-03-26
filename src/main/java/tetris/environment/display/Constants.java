@@ -25,7 +25,7 @@ public class Constants {
     public static final double DELAY_SECONDS_FAST = 0.3;
     public static final double DELAY_SECONDS_SPEEDUP = 0.04;
     public static final double DELAY_SECONDS_DROP = 0.009;
-    public static final double RESPONSE_DELAY_SECONDS = 0.1;
+    public static final double RESPONSE_DELAY_SECONDS = 0.15;
 
 
     public static String toStringStatic() {

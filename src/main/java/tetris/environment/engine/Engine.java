@@ -125,7 +125,7 @@ public class Engine {
      *
      * @return number of cleared lines
      */
-    private int RemoveCompletedLines() throws Error {
+    private int RemoveCompletedLines() {
         //region TESTING
         int nb0_of_empty_fields = 0;
         int nb0_of_stable_fields = 0;
@@ -147,19 +147,10 @@ public class Engine {
                     }
                 }
             }
-            if (nb0_of_stable_bricks != nb0_of_stable_fields) {
-                throw new Error("Error 1 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields");
-            }
-            if (nb0_of_moving_fields > 4) {
-                throw new Error("Error 2 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4");
-            }
-            if (nb0_of_moving_fields > 0) {
-                throw new Error("Error 3 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0");
-
-            }
-            if (nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields) {
-                throw new Error("Error 4 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields");
-            }
+            assert nb0_of_stable_bricks == nb0_of_stable_fields : "Error 1 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
+            assert nb0_of_moving_fields <= 4 : "Error 2 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4";
+            assert nb0_of_moving_fields <= 0 : "Error 3 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0";
+            assert nb0_of_empty_fields == total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields : "Error 4 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields";
         }
         // END OF TESTING REGION
         //endregion
@@ -226,27 +217,13 @@ public class Engine {
                     }
                 }
             }
-            if (nb1_of_stable_bricks != nb1_of_stable_fields) {
-                throw new Error("Error 5 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields");
-            }
-            if (nb1_of_moving_fields > 4) {
-                throw new Error("Error 6 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4");
-            }
-            if (nb1_of_empty_fields != total_nb_of_fields - nb1_of_stable_fields - nb1_of_moving_fields) {
-                throw new Error("Error 7 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields");
-            }
-            if (nb0_of_empty_fields + nb_of_cleared_stable_bricks != nb1_of_empty_fields) {
-                throw new Error("Error 8 in Engine.RemoveCompletedLines; nb0_of_empty_fields + nb_of_cleared_stable_bricks != nb1_of_empty_fields");
-            }
-            if (nb0_of_stable_bricks - nb_of_cleared_stable_bricks != nb1_of_stable_bricks) {
-                throw new Error("Error 9 in Engine.RemoveCompletedLines; nb0_of_stable_bricks - nb_of_cleared_stable_bricks != nb1_of_stable_bricks");
-            }
-            if (nb0_of_stable_fields - nb_of_cleared_stable_bricks != nb1_of_stable_fields) {
-                throw new Error("Error 10 in Engine.RemoveCompletedLines; nb0_of_stable_fields - nb_of_cleared_stable_bricks != nb1_of_stable_fields");
-            }
-            if (nb1_of_moving_fields > 0) {
-                throw new Error("Error 11 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0");
-            }
+            assert nb1_of_stable_bricks == nb1_of_stable_fields : "Error 5 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
+            assert nb1_of_moving_fields <= 4 : "Error 6 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4";
+            assert nb1_of_empty_fields == total_nb_of_fields - nb1_of_stable_fields - nb1_of_moving_fields : "Error 7 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields";
+            assert nb0_of_empty_fields + nb_of_cleared_stable_bricks == nb1_of_empty_fields : "Error 8 in Engine.RemoveCompletedLines; nb0_of_empty_fields + nb_of_cleared_stable_bricks != nb1_of_empty_fields";
+            assert nb0_of_stable_bricks - nb_of_cleared_stable_bricks == nb1_of_stable_bricks : "Error 9 in Engine.RemoveCompletedLines; nb0_of_stable_bricks - nb_of_cleared_stable_bricks != nb1_of_stable_bricks";
+            assert nb0_of_stable_fields - nb_of_cleared_stable_bricks == nb1_of_stable_fields : "Error 10 in Engine.RemoveCompletedLines; nb0_of_stable_fields - nb_of_cleared_stable_bricks != nb1_of_stable_fields";
+            assert nb1_of_moving_fields <= 0 : "Error 11 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0";
         }
         //endregion
         return clearedLines;
