@@ -1,8 +1,10 @@
 package tetris.environment.engine;
 
+import tetris.environment.engine.tetrimino.Brick;
 import tetris.environment.engine.tetrimino.Tetrimino;
 import tetris.environment.engine.tetrimino.TetriminoBuilder;
-
+import tetris.environment.engine.tetrimino.features.Position;
+import tetris.environment.engine.tetrimino.features.Shape;
 import java.util.*;
 
 import static tetris.environment.Constants.EngineConst.*;
@@ -19,21 +21,49 @@ public class Engine {
     private Tetrimino fallingTetrimino;
     private int gameScore = 0;
     private int totalGameScore = 0;
+    private final boolean debuggingMode;
 
     public Engine() {
         System.out.println("\nInitializing game engine.");
         gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
         tetriminoBuilder = new TetriminoBuilder();
         stableBricksMap = new HashMap<>();
-
+        this.debuggingMode = false;
         fillGameFieldWithValuesEmpty();
-        addNewFallingTetriminoToGameField();
+    }
+
+    public Engine(boolean debuggingMode) {
+        System.out.println("\nInitializing game engine in debugging mode. (live tests are active");
+        this.debuggingMode = debuggingMode;
+        gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
+        tetriminoBuilder = new TetriminoBuilder();
+        stableBricksMap = new HashMap<>();
+        fillGameFieldWithValuesEmpty();
     }
 
     /**
-     * Take next step in environment
+     * Takes next step in environment
+     *
+     * @param action action to execute
+     * @return StepResult
      */
-    public StepResult step(Direction direction) {
+    public StepResult step(Action action) {
+        //region TESTING
+        if (debuggingMode) {
+            printGameFieldArr();
+            int numb_of_falling_bricks = 0;
+            for (var row : gameFieldArr) {
+                for (var field : row) {
+                    if (field == GAME_FIELD_BRICK_FALLING) {
+                        numb_of_falling_bricks++;
+                    }
+                }
+            }
+            if (numb_of_falling_bricks > 4) {
+                throw new Error("Error in Engine.step(); number of falling bricks > 4.");
+            }
+        }
+        //endregion
         // check if the game is over
         if (isGameOver()) {
             // game is over
@@ -42,18 +72,26 @@ public class Engine {
             return new StepResult(true, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
         }
         // game is not over
-        // execute action from user/operator - move tetrimino left/right
-        if (canMove(direction)) {
-            move(direction);
+        // execute action from user/operator - rotate or move tetrimino left/right
+        if (action == Action.ROTATE) {
+            rotateFallingTetrimino();
+        } else if (canMove(action)) {
+            move(action);
         }
         // move tetrimino down (every turn)
         if (canMoveDown()) {
-            move(Direction.DOWN);
+            move(Action.MOVE_DOWN);
         } else {
             putDownTetrimino();
             // Remove completed lines and return number of them.
-            int completedLines = RemoveCompletedLines();
-            gameScore += completedLines;
+            try {
+                int completedLines = RemoveCompletedLines();
+                gameScore += completedLines;
+            } catch (Error e) {
+                System.out.println(e.getMessage());
+                System.exit(-1);
+            }
+            addNewFallingTetriminoToGameField();
         }
         return new StepResult(false, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
     }
@@ -84,14 +122,51 @@ public class Engine {
      *
      * @return number of cleared lines
      */
-    private int RemoveCompletedLines() {
+    private int RemoveCompletedLines() throws Error {
+        //region TESTING
+        int nb0_of_empty_fields = 0;
+        int nb0_of_stable_fields = 0;
+        int nb0_of_moving_fields = 0;
+        int nb0_of_stable_bricks = 0;
+        if (debuggingMode) {
+            int total_nb_of_fields = GAME_FIELD_SIZE_X * GAME_FIELD_SIZE_Y;
+            nb0_of_stable_bricks = stableBricksMap.size();
+            for (int y = 0; y < gameFieldArr.length; y++) {
+                for (int x = 0; x < gameFieldArr[y].length; x++) {
+                    if (gameFieldArr[y][x] == GAME_FIELD_BRICK_STABLE) {
+                        nb0_of_stable_fields++;
+                    }
+                    if (gameFieldArr[y][x] == GAME_FIELD_BRICK_FALLING) {
+                        nb0_of_moving_fields++;
+                    }
+                    if (gameFieldArr[y][x] == GAME_FIELD_EMPTY) {
+                        nb0_of_empty_fields++;
+                    }
+                }
+            }
+            if (nb0_of_stable_bricks != nb0_of_stable_fields) {
+                throw new Error("Error 1 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields");
+            }
+            if (nb0_of_moving_fields > 4) {
+                throw new Error("Error 2 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4");
+            }
+            if (nb0_of_moving_fields > 0) {
+                throw new Error("Error 3 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0");
+
+            }
+            if (nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields) {
+                throw new Error("Error 4 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields");
+            }
+        }
+        // END OF TESTING REGION
+        //endregion
         // if sum of occupied fields in a line equals the line length, than the line is complete
         int clearedLines = 0;
         // loop through the game field array bottom up
-        for (int lineNumber = gameFieldArr.length - 1; lineNumber >= 0; lineNumber--) {
+        for (int y = gameFieldArr.length - 1; y >= 0; y--) {
             // sum stableBricks in a line
             int lineStableBricks = 0;
-            for (int value : gameFieldArr[lineNumber]) {
+            for (int value : gameFieldArr[y]) {
                 if (value == GAME_FIELD_BRICK_STABLE) {
                     lineStableBricks++;
                 }
@@ -101,20 +176,21 @@ public class Engine {
                 // line is complete
                 clearedLines++;
                 // clear bricks from stableBrickDict
-                for (int x = 0; x < gameFieldArr[lineNumber].length; x++) {
-                    Position pos = new Position(x, lineNumber);
+                for (int x = 0; x < gameFieldArr[y].length; x++) {
+                    Position pos = new Position(x, y);
                     stableBricksMap.remove(pos);
+                    gameFieldArr[y][x] = GAME_FIELD_EMPTY;
                 }
                 // move all the above lines down, by one row, starting from cleared index
                 // remap positions in all above bricks
-                for (int k = lineNumber; k > 0; k--) {
-                    gameFieldArr[k] = gameFieldArr[k - 1];
-                    for (int i = 0; i < gameFieldArr[k].length; i++) {
-                        Position oldPos = new Position(i, k - 1);
+                for (int k = y; k > 0; k--) {
+                    for (int x = 0; x < gameFieldArr[k].length; x++) {
+                        gameFieldArr[k][x] = gameFieldArr[k - 1][x];
+                        Position oldPos = new Position(x, k - 1);
                         Brick oldBrick = stableBricksMap.get(oldPos);
                         if (oldBrick != null) {
                             stableBricksMap.remove(oldPos);
-                            Position newPos = new Position(i, k);
+                            Position newPos = new Position(x, k);
                             oldBrick.setPosition(newPos);
                             stableBricksMap.put(newPos, oldBrick);
                         }
@@ -122,17 +198,61 @@ public class Engine {
                 }
                 // top line should be empty
                 Arrays.fill(gameFieldArr[0], GAME_FIELD_EMPTY);
-                // everything moved down, so we need to check same line again, increment lineNumber
-                lineNumber++;
+                // everything moved down, so we need to check same line again, increment y
+                y++;
             }
         }
+        //region TESTING
+        if (debuggingMode) {
+            int total_nb_of_fields = GAME_FIELD_SIZE_X * GAME_FIELD_SIZE_Y;
+            int nb_of_cleared_stable_bricks = clearedLines * GAME_FIELD_SIZE_X;
+            int nb1_of_empty_fields = 0;
+            int nb1_of_stable_fields = 0;
+            int nb1_of_moving_fields = 0;
+            int nb1_of_stable_bricks = stableBricksMap.size();
+            for (int y = 0; y < gameFieldArr.length; y++) {
+                for (int x = 0; x < gameFieldArr[y].length; x++) {
+                    if (gameFieldArr[y][x] == GAME_FIELD_BRICK_STABLE) {
+                        nb1_of_stable_fields++;
+                    }
+                    if (gameFieldArr[y][x] == GAME_FIELD_BRICK_FALLING) {
+                        nb1_of_moving_fields++;
+                    }
+                    if (gameFieldArr[y][x] == GAME_FIELD_EMPTY) {
+                        nb1_of_empty_fields++;
+                    }
+                }
+            }
+            if (nb1_of_stable_bricks != nb1_of_stable_fields) {
+                throw new Error("Error 5 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields");
+            }
+            if (nb1_of_moving_fields > 4) {
+                throw new Error("Error 6 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4");
+            }
+            if (nb1_of_empty_fields != total_nb_of_fields - nb1_of_stable_fields - nb1_of_moving_fields) {
+                throw new Error("Error 7 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields");
+            }
+            if (nb0_of_empty_fields + nb_of_cleared_stable_bricks != nb1_of_empty_fields) {
+                throw new Error("Error 8 in Engine.RemoveCompletedLines; nb0_of_empty_fields + nb_of_cleared_stable_bricks != nb1_of_empty_fields");
+            }
+            if (nb0_of_stable_bricks - nb_of_cleared_stable_bricks != nb1_of_stable_bricks) {
+                throw new Error("Error 9 in Engine.RemoveCompletedLines; nb0_of_stable_bricks - nb_of_cleared_stable_bricks != nb1_of_stable_bricks");
+            }
+            if (nb0_of_stable_fields - nb_of_cleared_stable_bricks != nb1_of_stable_fields) {
+                throw new Error("Error 10 in Engine.RemoveCompletedLines; nb0_of_stable_fields - nb_of_cleared_stable_bricks != nb1_of_stable_fields");
+            }
+            if (nb1_of_moving_fields > 0) {
+                throw new Error("Error 11 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0");
+            }
+        }
+        //endregion
         return clearedLines;
     }
 
     /**
-     * Checks if any stable brick touches top of the map
+     * Checks if any stable brick is located in top line of the game field.
      *
-     * @return true if it does, false otherwise
+     * @return true if it is, false otherwise
      */
     private boolean isGameOver() {
         for (var position : gameFieldArr[0]) {
@@ -143,6 +263,9 @@ public class Engine {
         return false;
     }
 
+    /**
+     * Handles game over
+     */
     private void handleGameOver() {
         totalGameScore += gameScore;
         gameScore = 0;
@@ -150,7 +273,7 @@ public class Engine {
 
     /**
      * Changes {@code fallingTetrimino} {@code gameFieldArr} states from falling to stable, moves its Bricks to the
-     * {@code stableBricksDict} and adds new {@code fallingTetrimino} to the game field
+     * {@code stableBricksDict}
      */
     private void putDownTetrimino() {
         for (var brick : fallingTetrimino.getBricks()) {
@@ -158,17 +281,15 @@ public class Engine {
             stableBricksMap.put(position, brick);
             gameFieldArr[position.getY()][position.getX()] = GAME_FIELD_BRICK_STABLE;
         }
-
-        addNewFallingTetriminoToGameField();
     }
 
     private void addNewFallingTetriminoToGameField() {
         fallingTetrimino = tetriminoBuilder.buildNewTetrimino();
-        // add tetrimino bricks to game field array
+        // add tetrimino bricks to the game field array
         for (var brick : fallingTetrimino.getBricks()) {
             var position = brick.getPosition();
-            // dont overwrite not empty values, changes result of isGameOver()
-            if (gameFieldArr[position.getY()][position.getX()] == GAME_FIELD_EMPTY) {
+            // dont overwrite stable values
+            if (gameFieldArr[position.getY()][position.getX()] != GAME_FIELD_BRICK_STABLE) {
                 gameFieldArr[position.getY()][position.getX()] = GAME_FIELD_BRICK_FALLING;
             }
         }
@@ -177,19 +298,19 @@ public class Engine {
     /**
      * Moves down {@code fallingTetrimino}
      */
-    private void move(Direction direction) {
+    private void move(Action action) {
         int addToX;
         int addToY;
-        switch (direction) {
-            case DOWN:
+        switch (action) {
+            case MOVE_DOWN:
                 addToX = 0;
                 addToY = 1;
                 break;
-            case LEFT:
+            case MOVE_LEFT:
                 addToX = -1;
                 addToY = 0;
                 break;
-            case RIGHT:
+            case MOVE_RIGHT:
                 addToX = 1;
                 addToY = 0;
                 break;
@@ -225,13 +346,13 @@ public class Engine {
      *
      * @return true if can, false otherwise
      */
-    private boolean canMove(Direction direction) {
+    private boolean canMove(Action action) {
         int addToX;
-        switch (direction) {
-            case LEFT:
+        switch (action) {
+            case MOVE_LEFT:
                 addToX = -1;
                 break;
-            case RIGHT:
+            case MOVE_RIGHT:
                 addToX = 1;
                 break;
             default:
@@ -262,6 +383,60 @@ public class Engine {
             }
         }
         return true;
+    }
+
+    /**
+     * Rotates fallingTetrimino clockwise
+     */
+    private void rotateFallingTetrimino() {
+        if (fallingTetrimino.getShape() == Shape.SHAPE_O) {
+            return;  // O is symmetric in both dimensions, rotation has no effect
+        }
+        Brick[] bricks = fallingTetrimino.getBricks();
+        Position centerOfRotation = bricks[1].getPosition();
+
+        Position [] newPositions = new Position[4];
+        for (int i = 0; i < bricks.length; i++) {
+            newPositions[i] = bricks[i].getPosition().rotate(centerOfRotation);
+        }
+        // check if fields are allowed
+        if (isFieldAllowedToMove(newPositions)) {
+            for (int i = 0; i < bricks.length; i++) {
+                Brick brick = bricks[i];
+                var oldPosition = brick.getPosition();
+                gameFieldArr[oldPosition.getY()][oldPosition.getX()] = GAME_FIELD_EMPTY;
+                brick.setPosition(newPositions[i]);
+                gameFieldArr[newPositions[i].getY()][newPositions[i].getX()] = GAME_FIELD_BRICK_FALLING;
+            }
+        }
+    }
+
+    /**
+     * Checks if field on {@code gameFieldArr} is unoccupied and within the array boundaries.
+     *
+     * @param position {@code Position} requested to test.
+     * @return true if field is allowed to move and false otherwise.
+     */
+    private boolean isFieldAllowedToMove(Position position) {
+        var x = position.getX();
+        var y = position.getY();
+        return x < GAME_FIELD_SIZE_X && x >= 0 && y < GAME_FIELD_SIZE_Y && y >= 0
+                && gameFieldArr[y][x] != GAME_FIELD_BRICK_STABLE;
+    }
+
+    private boolean isFieldAllowedToMove(Position[] positions) {
+        for (var position : positions) {
+            var x = position.getX();
+            var y = position.getY();
+            if (!isFieldAllowedToMove(position)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void rotateTetriminoShapeO() {
+        // well, do nothing actually. Placeholder.
     }
 
     public void printGameFieldArr() {

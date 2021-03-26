@@ -1,4 +1,4 @@
-package tetris.environment.engine;
+package tetris.environment.engine.tetrimino.features;
 
 
 public enum Color {

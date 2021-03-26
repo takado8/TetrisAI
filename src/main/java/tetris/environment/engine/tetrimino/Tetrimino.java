@@ -1,8 +1,7 @@
 package tetris.environment.engine.tetrimino;
 
-import tetris.environment.engine.Brick;
-import tetris.environment.engine.Color;
-import tetris.environment.engine.Shape;
+import tetris.environment.engine.tetrimino.features.Color;
+import tetris.environment.engine.tetrimino.features.Shape;
 
 
 /**

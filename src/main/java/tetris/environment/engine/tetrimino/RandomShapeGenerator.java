@@ -1,9 +1,9 @@
 package tetris.environment.engine.tetrimino;
 
-import tetris.environment.engine.Shape;
+import tetris.environment.engine.tetrimino.features.Shape;
 import java.util.Random;
 
-import static tetris.environment.engine.Shape.*;
+import static tetris.environment.engine.tetrimino.features.Shape.*;
 
 class RandomShapeGenerator {
     private static final Random random = new Random();

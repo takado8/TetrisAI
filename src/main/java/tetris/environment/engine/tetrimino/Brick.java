@@ -1,6 +1,7 @@
-package tetris.environment.engine;
+package tetris.environment.engine.tetrimino;
 
-import java.util.Random;
+import tetris.environment.engine.tetrimino.features.Color;
+import tetris.environment.engine.tetrimino.features.Position;
 
 /**
  * Smallest part of the {@code Tetrimino} block.

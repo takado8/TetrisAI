@@ -1,5 +1,6 @@
 package tetris.environment.engine;
 
+import tetris.environment.engine.tetrimino.Brick;
 import tetris.environment.engine.tetrimino.Tetrimino;
 
 import java.util.Arrays;

@@ -1,12 +1,11 @@
 package tetris.environment.engine.tetrimino;
 
-import tetris.environment.engine.Brick;
-import tetris.environment.engine.Color;
-import tetris.environment.engine.Position;
-import tetris.environment.engine.Shape;
+import tetris.environment.engine.tetrimino.features.Color;
+import tetris.environment.engine.tetrimino.features.Position;
+import tetris.environment.engine.tetrimino.features.Shape;
 
 import static tetris.environment.Constants.EngineConst.GAME_FIELD_SIZE_X;
-import static tetris.environment.engine.Shape.*;
+import static tetris.environment.engine.tetrimino.features.Shape.*;
 
 /**
  * Builds {@code Tetrimino} piece from 4 {@code Bricks},
@@ -53,6 +52,7 @@ public class TetriminoBuilder {
     }
 
     private Tetrimino buildTetriminoShapeIColorBlack() {
+        // place holder / error tetrimino
         Color color = Color.BLACK;
         return buildTetriminoShapeIBase(color);
     }

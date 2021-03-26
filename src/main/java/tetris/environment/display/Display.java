@@ -17,6 +17,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
+import tetris.environment.engine.tetrimino.Brick;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class Display extends Application {
     private double timeDelay = DELAY_SECONDS_NORMAL;
 
     private Engine engine;
-    private Direction directionSelected = Direction.NONE;
+    private Action actionSelected = Action.NONE;
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -42,10 +44,9 @@ public class Display extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // init game engine
-        engine = new Engine();
+        engine = new Engine(true);
         // init Display
         System.out.println("Display.start()");
-//        System.out.println(Constants.DisplayConst.toStringStatic());
         // make root
         root = new Group();
         // setup scene
@@ -66,20 +67,20 @@ public class Display extends Application {
                 }
                 if (now - lastUpdate >= timeDelay * 1_000_000_000.0) {
                     // make step with selected action and get result
-                    StepResult stepResult = engine.step(directionSelected);
+                    StepResult stepResult = engine.step(actionSelected);
                     if (stepResult.isFinalStep) {
                         // reset environment
                         gameLoop.stop();
                         scoreLabel.setText("GAME OVER");
                         return;
                     }
-                    directionSelected = Direction.NONE;
+                    actionSelected = Action.NONE;
                     // update position in all elements
                     // for now just erase old and replace with new ones. ughh.
                     for (BrickDisplay brick : brickDisplayList) {
                         root.getChildren().remove(brick);
                     }
-                    for (Brick brick : stepResult.bricks){
+                    for (Brick brick : stepResult.bricks) {
                         BrickDisplay brickDisplay = new BrickDisplay(brick);
                         brickDisplayList.add(brickDisplay);
                         root.getChildren().add(brickDisplay);
@@ -123,7 +124,7 @@ public class Display extends Application {
         return scene;
     }
 
-    private void keyboardListenerRelease(Event e){
+    private void keyboardListenerRelease(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.DOWN || keyCode == KeyCode.SPACE) {
             timeDelay = DELAY_SECONDS_NORMAL;
@@ -133,9 +134,11 @@ public class Display extends Application {
     private void keyboardListener(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.LEFT) {
-            directionSelected = Direction.LEFT;
+            actionSelected = Action.MOVE_LEFT;
         } else if (keyCode == KeyCode.RIGHT) {
-            directionSelected = Direction.RIGHT;
+            actionSelected = Action.MOVE_RIGHT;
+        } else if (keyCode == KeyCode.UP) {
+            actionSelected = Action.ROTATE;
         } else if (keyCode == KeyCode.DOWN) {
             timeDelay = DELAY_SECONDS_SPEEDUP;
         } else if (keyCode == KeyCode.SPACE) {
@@ -153,11 +156,11 @@ public class Display extends Application {
         // reset timer
         lastUpdate = 0L;
         // clear action
-        directionSelected = Direction.NONE;
+        actionSelected = Action.NONE;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
         // make BrickDisplays and add them to the list and to the root
-        for(var brick : stepResult.bricks){
+        for (var brick : stepResult.bricks) {
             BrickDisplay brickDisplay = new BrickDisplay(brick);
             brickDisplayList.add(brickDisplay);
             root.getChildren().add(brickDisplay);
