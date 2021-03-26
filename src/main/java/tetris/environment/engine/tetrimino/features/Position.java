@@ -17,11 +17,15 @@ public class Position {
     public Position rotate(Position center) {
         int rotationDegrees = 90;
         double theta = Math.toRadians(rotationDegrees);
-        int x = getX() - center.getX();
-        int y = getY() - center.getY();
-        int newX = (int) Math.round(x * Math.cos(theta) - y * Math.sin(theta));
-        int newY = (int) Math.round(x * Math.sin(theta) + y * Math.cos(theta));
-        return new Position(newX + center.getX(), newY + center.getY());
+        int centerX = center.getX();
+        int centerY = center.getY();
+        int x = this.x - centerX;
+        int y = this.y - centerY;
+        double cosTheta = Math.cos(theta);
+        double sinTheta = Math.sin(theta);
+        int newX = (int) Math.round(x * cosTheta - y * sinTheta);
+        int newY = (int) Math.round(x * sinTheta + y * cosTheta);
+        return new Position(newX + centerX, newY + centerY);
     }
 
     public int getX() {
