@@ -19,12 +19,11 @@ import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
 import tetris.environment.engine.Action;
 import tetris.environment.engine.tetrimino.Brick;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tetris.environment.Constants.DisplayConst.*;
+import static tetris.environment.display.Constants.*;
+
 
 public class Display extends Application {
     private Group root;
@@ -61,24 +60,11 @@ public class Display extends Application {
         setWindowParameters(primaryStage);
     }
 
-    private boolean isTimeToEndTurn(long now) {
-        return now - lastUpdate >= timeDelay * 1_000_000_000.0;
-    }
-
-    private boolean isTimeToRespond(long now) {
-        return now - lastResponseUpdate >= RESPONSE_DELAY_SECONDS * 1_000_000_000.0;
-    }
-
     void startGame() {
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (lastUpdate == 0L) {
-                    lastUpdate = now;
-                }
-                if (lastResponseUpdate == 0L) {
-                    lastResponseUpdate = now;
-                }
+                initTimers(now);
                 if (isTimeToEndTurn(now)) {
                     // end turn, get result
                     StepResult step_ = engine.step(actionSelected);
@@ -90,7 +76,9 @@ public class Display extends Application {
                         return;
                     }
                     if (stepResult.isTetriminoDropped()) {
-                        timeDelay = DELAY_SECONDS_NORMAL;
+                        if (timeDelay != DELAY_SECONDS_NORMAL) {
+                            timeDelay = DELAY_SECONDS_NORMAL;
+                        }
                     }
                     if (actionSelected == Action.ROTATE) {
                         actionSelected = Action.NONE;
@@ -112,9 +100,17 @@ public class Display extends Application {
         gameLoop.start();
     }
 
+    private boolean isTimeToEndTurn(long now) {
+        return now - lastUpdate >= timeDelay * 1_000_000_000.0;
+    }
+
+    private boolean isTimeToRespond(long now) {
+        return now - lastResponseUpdate >= RESPONSE_DELAY_SECONDS * 1_000_000_000.0;
+    }
+
     private void updateDisplay(StepResult stepResult) {
         // update position in all elements
-        // for now just erase old and replace with new ones. ughh.
+        // for now just erase old and replace with new ones.
         for (BrickDisplay brick : brickDisplayList) {
             root.getChildren().remove(brick);
         }
@@ -189,19 +185,14 @@ public class Display extends Application {
         }
         // clear brick list
         brickDisplayList.clear();
-        // reset timer
+        // reset timers
         lastUpdate = 0L;
         lastResponseUpdate = 0L;
         // clear action
         actionSelected = Action.NONE;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
-        // make BrickDisplays and add them to the list and to the root
-        for (var brick : stepResult.getBricks()) {
-            BrickDisplay brickDisplay = new BrickDisplay(brick);
-            brickDisplayList.add(brickDisplay);
-            root.getChildren().add(brickDisplay);
-        }
+        updateDisplay(stepResult);
     }
 
     /**
@@ -224,4 +215,12 @@ public class Display extends Application {
         primaryStage.setTitle("TetrisAI");
     }
 
+    void initTimers (long now) {
+        if (lastUpdate == 0L) {
+            lastUpdate = now;
+        }
+        if (lastResponseUpdate == 0L) {
+            lastResponseUpdate = now;
+        }
+    }
 }

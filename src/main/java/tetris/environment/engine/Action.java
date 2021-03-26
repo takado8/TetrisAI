@@ -5,7 +5,6 @@ public enum Action {
     MOVE_RIGHT,
     MOVE_DOWN,
     ROTATE,
-    PAUSE,
     END_TURN,
     NONE
 }

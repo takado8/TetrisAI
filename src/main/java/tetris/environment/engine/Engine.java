@@ -7,7 +7,7 @@ import tetris.environment.engine.tetrimino.features.Position;
 import tetris.environment.engine.tetrimino.features.Shape;
 import java.util.*;
 
-import static tetris.environment.Constants.EngineConst.*;
+import static tetris.environment.engine.Constants.*;
 
 /**
  * Responsible for game logic - maintaining game field,

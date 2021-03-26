@@ -4,7 +4,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import tetris.environment.engine.tetrimino.Brick;
 
-import static tetris.environment.Constants.DisplayConst.*;
+import static tetris.environment.display.Constants.*;
 
 
 /**

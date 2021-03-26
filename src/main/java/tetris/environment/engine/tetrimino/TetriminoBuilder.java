@@ -4,7 +4,7 @@ import tetris.environment.engine.tetrimino.features.Color;
 import tetris.environment.engine.tetrimino.features.Position;
 import tetris.environment.engine.tetrimino.features.Shape;
 
-import static tetris.environment.Constants.EngineConst.GAME_FIELD_SIZE_X;
+import static tetris.environment.engine.Constants.GAME_FIELD_SIZE_X;
 import static tetris.environment.engine.tetrimino.features.Shape.*;
 
 /**
