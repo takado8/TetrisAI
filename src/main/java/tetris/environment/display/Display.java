@@ -31,6 +31,7 @@ import static tetris.environment.display.Constants.*;
 public class Display extends Application {
     private Group root;
     private Label scoreLabel;
+    private double gameScore = 0.0;
     private final List<BrickDisplay> brickDisplayList = new ArrayList<>();
 
     private AnimationTimer gameLoop;
@@ -41,7 +42,8 @@ public class Display extends Application {
     private Engine engine;
     private Action actionSelected = Action.NONE;
     private final boolean aiSimulation = true;
-    private Agent aiAgent = new Agent();
+    private double[] agentChromosome = {0.2958203318680887, -0.633914597381398, -0.6618196809613753, -0.26951312467562205};
+    private Agent aiAgent = new Agent(agentChromosome);
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -90,6 +92,11 @@ public class Display extends Application {
                         if (timeDelay != DELAY_SECONDS_NORMAL) {
                             timeDelay = DELAY_SECONDS_NORMAL;
                         }
+                        // update score
+                        if (stepResult.getGameScore() != gameScore){
+                            gameScore = stepResult.getGameScore();
+                            scoreLabel.setText("Score: " + (int)gameScore);
+                        }
                     }
                     if (actionSelected == Action.ROTATE) {
                         actionSelected = Action.NONE;
@@ -125,6 +132,7 @@ public class Display extends Application {
         for (BrickDisplay brick : brickDisplayList) {
             root.getChildren().remove(brick);
         }
+        brickDisplayList.clear();
         for (Brick brick : stepResult.getBricks()) {
             BrickDisplay brickDisplay = new BrickDisplay(brick);
             brickDisplayList.add(brickDisplay);
@@ -203,6 +211,9 @@ public class Display extends Application {
         actionSelected = Action.NONE;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
+        // reset game scores
+        gameScore = stepResult.getGameScore();
+        scoreLabel.setText("Score: " + gameScore);
         // if AI simulation mode is active, run simulation for first tetrimino
         if (aiSimulation){
             engine.simulate(aiAgent);

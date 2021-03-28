@@ -11,12 +11,15 @@ public class HeadlessMain {
 
     public static void main(String[] args) {
         System.out.println("Headless main()");
-        int nbOfGenerations = 600;
-        int populationSize = 200;
-        int maxTurns = 10_000;
+        int nbOfGenerations = 2000;
+        int populationSize = 180;
+        int maxTurns = 5_000; // ~ 2k lines
+        int maxGames = 3;
         double bestScore = -Double.MAX_VALUE;
+        Agent bestAgent = new Agent();
+        Agent bestGenerationAgent = new Agent();
 
-        Evolution evolution = new Evolution(populationSize, nbOfGenerations, 0.5, 0.05);
+        Evolution evolution = new Evolution(populationSize, nbOfGenerations, 0.4, 0.05);
         Engine engine = new Engine(false);
 
         // for number of generations
@@ -25,47 +28,61 @@ public class HeadlessMain {
             double generationScores = 0;
             double generationBestScore = -1;
 
-            // each agent in population plays game
+            // each agent in population plays n games
             for (Agent agent : evolution.getPopulation()) {
-                // set environment to initial state
-                engine.reset();
-                StepResult stepResult = null;
-                // until game is not over
-                boolean isFinalStep = false;
-                int turnsPlayed = 0;
-                while (!isFinalStep && turnsPlayed < maxTurns) {
-                    // set new tetrimino in desired location
-                    engine.simulate(agent);
-                    // move tetrimino down until it drops
-                    boolean tetriminoDropped = false;
-                    while (!tetriminoDropped) {
-                        // save results
-                        stepResult = engine.step(Action.END_TURN);
-                        tetriminoDropped = stepResult.isTetriminoDropped();
+                double agentScores = 0;
+                for (int n = 0; n < maxGames; n++) {
+                    // set environment to initial state
+                    engine.reset();
+                    StepResult stepResult = null;
+                    // until game is not over
+                    boolean isFinalStep = false;
+                    int turnsPlayed = 0;
+                    while (!isFinalStep && turnsPlayed < maxTurns) {
+                        // set new tetrimino in desired location
+                        engine.simulate(agent);
+                        // move tetrimino down until it drops
+                        boolean tetriminoDropped = false;
+                        while (!tetriminoDropped) {
+                            // save results
+                            stepResult = engine.step(Action.END_TURN);
+                            tetriminoDropped = stepResult.isTetriminoDropped();
+                        }
+                        // tetrimino dropped, check if game is over
+                        isFinalStep = stepResult.isFinalStep();
+                        turnsPlayed++;
                     }
-                    // tetrimino dropped, check if game is over
-                    isFinalStep = stepResult.isFinalStep();
-                    turnsPlayed++;
-                }
-                // game is over, save agent results
-                agent.setFitness(stepResult.getGameScore());
-                generationScores += stepResult.getGameScore();
-                if (stepResult.getGameScore() > generationBestScore) {
-                    generationBestScore = stepResult.getGameScore();
+                    // game is over, save agent results
+                    agentScores += stepResult.getGameScore();
 
-                    if (stepResult.getGameScore() > bestScore) {
-                        bestScore = stepResult.getGameScore();
+
+                }
+                generationScores += agentScores;
+                agentScores /= maxGames;
+                agent.setFitness(agentScores);
+                // count high score etc
+                if (agentScores > generationBestScore) {
+                    generationBestScore = agentScores;
+                    bestGenerationAgent = agent;
+                    if (agentScores > bestScore) {
+                        bestScore = agentScores;
+                        bestAgent = agent;
                     }
                 }
                 // next agent
             }
             // next generation
             // print some info about last generation performance
-            System.out.println("Generation " + g + " avg score: " + generationScores / populationSize
-                    + " generation best: "+ generationBestScore +" total best score: " + bestScore );
-            // evolve
+            System.out.println("Generation " + g + " avg score: " + generationScores / (populationSize * maxGames)
+                    + " generation best: " + generationBestScore + " total best score: " + bestScore);
+            if (g % 10 == 0) {
+                System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()) );
+                System.out.println("Best score generation chromosome: " + Arrays.toString(bestGenerationAgent.getChromosome()) );
+            }            // evolve
             evolution.nextGeneration();
 //            System.out.println(Arrays.toString(evolution.getPopulation().get(0).getChromosome()));
         }
+        System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()) );
+        System.out.println("Best score generation chromosome: " + Arrays.toString(bestGenerationAgent.getChromosome()) );
     }
 }
