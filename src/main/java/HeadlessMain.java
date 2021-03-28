@@ -12,14 +12,14 @@ public class HeadlessMain {
     public static void main(String[] args) {
         System.out.println("Headless main()");
         int nbOfGenerations = 2000;
-        int populationSize = 180;
-        int maxTurns = 5_000; // ~ 2k lines
-        int maxGames = 3;
+        int populationSize = 260;
+        int maxTurns = 1000; // ~
+        int maxGames = 5;
         double bestScore = -Double.MAX_VALUE;
         Agent bestAgent = new Agent();
         Agent bestGenerationAgent = new Agent();
 
-        Evolution evolution = new Evolution(populationSize, nbOfGenerations, 0.4, 0.05);
+        Evolution evolution = new Evolution(populationSize, nbOfGenerations, 0.6, 0.15);
         Engine engine = new Engine(false);
 
         // for number of generations

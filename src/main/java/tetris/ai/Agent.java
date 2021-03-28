@@ -36,7 +36,7 @@ public class Agent {
      */
     public void mutate() {
         int mutationIndex = randomGenerator.nextInt(chromosome.length);
-        chromosome[mutationIndex] += randomGenerator.nextDouble(-0.01, 0.01);
+        chromosome[mutationIndex] += randomGenerator.nextDouble(-MUTATION_VALUE, MUTATION_VALUE);
         normalizeChromosome();
     }
 
@@ -77,10 +77,5 @@ public class Agent {
     public boolean equals(Object o) {
         return this == o;
     }
-
-//    @Override
-//    public int hashCode() {
-//
-//    }
 }
 

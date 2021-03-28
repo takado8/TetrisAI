@@ -35,7 +35,7 @@ public class Engine {
     }
 
     public Engine(boolean debuggingMode) {
-        System.out.println("\nInitializing game engine in debugging mode. (live tests are active");
+        System.out.println("\nInitializing game engine in debugging mode " + debuggingMode);
         this.debuggingMode = debuggingMode;
         gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
         tetriminoBuilder = new TetriminoBuilder();
@@ -96,7 +96,7 @@ public class Engine {
                 // game is over
                 handleGameOver();
                 // return final StepResult
-                return new StepResult(true,tetriminoDropped,gameScore, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
+                return new StepResult(true, tetriminoDropped, gameScore, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
             }
         }
         return new StepResult(false, tetriminoDropped, gameScore, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
@@ -232,7 +232,7 @@ public class Engine {
             assert nb0_of_stable_bricks - nb_of_cleared_stable_bricks == nb1_of_stable_bricks : "Error 9 in Engine.RemoveCompletedLines; nb0_of_stable_bricks - nb_of_cleared_stable_bricks != nb1_of_stable_bricks";
             assert nb0_of_stable_fields - nb_of_cleared_stable_bricks == nb1_of_stable_fields : "Error 10 in Engine.RemoveCompletedLines; nb0_of_stable_fields - nb_of_cleared_stable_bricks != nb1_of_stable_fields";
             assert nb1_of_moving_fields <= 0 : "Error 11 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0";
-            assert clearedLines == nb_of_lines_by_simulation_function: "Error 12 in Engine.RemoveCompletedLines; clearedLines == nb_of_lines_by_simulation_function";
+            assert clearedLines == nb_of_lines_by_simulation_function : "Error 12 in Engine.RemoveCompletedLines; clearedLines == nb_of_lines_by_simulation_function";
         }
         //endregion
         return clearedLines;
@@ -488,18 +488,18 @@ public class Engine {
                     move(Action.MOVE_DOWN);
                 }
                 // evaluate field
-                double []fieldFeaturesValues = new double[4];
-               fieldFeaturesValues[0] = getNumberOfCompleteLines();
-               fieldFeaturesValues[1] = getNumberOfHoles();
-               fieldFeaturesValues[2] = getColumnsSummedHeight();
-               fieldFeaturesValues[3] = getColumnsSummedHeightDifference();
-               double fieldEvaluation = aiAgent.evaluateMove(fieldFeaturesValues);
-//               System.out.println("field eval here in assingment: " + fieldEvaluation);
-//                for (int i = 0; i < 4; i++) {
-////                    System.out.println("field feature " + i + ": " + fieldFeaturesValues[i]);
-//                }
-               SimulationResult simulationResult = new SimulationResult(movesRight, rotations);
-               evaluationMap.put(fieldEvaluation, simulationResult);
+                double[] fieldFeaturesValues = new double[6];
+                fieldFeaturesValues[0] = getNumberOfCompleteLines();
+                fieldFeaturesValues[1] = getNumberOfHoles();
+                fieldFeaturesValues[2] = getColumnsSummedHeight();
+                fieldFeaturesValues[3] = getColumnsSummedHeightDifference();
+                fieldFeaturesValues[4] = getMaxColumnHeight();
+                fieldFeaturesValues[5] = getPointsOfTouch();
+
+                double fieldEvaluation = aiAgent.evaluateMove(fieldFeaturesValues);
+
+                SimulationResult simulationResult = new SimulationResult(movesRight, rotations);
+                evaluationMap.put(fieldEvaluation, simulationResult);
                 // bring it to starting position
                 for (int i = 0; i < bricks.length; i++) {
                     Brick brick = bricks[i];
@@ -536,25 +536,19 @@ public class Engine {
         // get best result from evaluationMap
         double maxValue = -Double.MAX_VALUE;
         SimulationResult bestResult = null;//new SimulationResult(0,0);  // we want to crash if sth goes wrong and evaluationMap should never be empty
-//        System.out.println("len of eval map: " + evaluationMap.size());
-        for(var mapEntry : evaluationMap.entrySet()){
+        for (var mapEntry : evaluationMap.entrySet()) {
             double moveEvaluation = mapEntry.getKey();
-
-//            System.out.println("still good eval: " + moveEvaluation);
-            if (moveEvaluation > maxValue){
-//                System.out.println("it is");
+            if (moveEvaluation > maxValue) {
                 maxValue = moveEvaluation;
                 bestResult = mapEntry.getValue();
             }
         }
-//        System.out.println("and the best result is: " + bestResult);
-
         // set tetrimino in wanted position
         // not every tetrimino can rotate near wall, so we move it two times right,
         // than rotate it and move it back to the left. This solution could be better, works for now.
         // so two fields to the right
         for (int i = 0; i < 2; i++) {
-            if (canMove(Action.MOVE_RIGHT)){
+            if (canMove(Action.MOVE_RIGHT)) {
                 move(Action.MOVE_RIGHT);
             }
         }
@@ -568,7 +562,7 @@ public class Engine {
         }
         // now go right.
         for (int i = 0; i < bestResult.getMovesRight(); i++) {
-            if (canMove(Action.MOVE_RIGHT)){
+            if (canMove(Action.MOVE_RIGHT)) {
                 move(Action.MOVE_RIGHT);
             }
         }
@@ -593,21 +587,35 @@ public class Engine {
         return completedLines;
     }
 
+    private double normalizeNumberOfLines(int linesNumber) {
+        // max possible number of lines cleared in one move is 4
+        // normalize to range <0;1>
+        return ((double)linesNumber) / 4;
+    }
+
     private int getNumberOfHoles() {
         boolean startCountingHoles = false;
         int holesNb = 0;
         for (int x = 0; x < GAME_FIELD_SIZE_X; x++) {
             for (int y = 0; y < GAME_FIELD_SIZE_Y; y++) {
-                if (gameFieldArr[y][x] != GAME_FIELD_EMPTY){
+                if (gameFieldArr[y][x] != GAME_FIELD_EMPTY) {
                     startCountingHoles = true;
                 }
-                if (startCountingHoles && gameFieldArr[y][x] == GAME_FIELD_EMPTY){
+                if (startCountingHoles && gameFieldArr[y][x] == GAME_FIELD_EMPTY) {
                     holesNb++;
                 }
             }
             startCountingHoles = false;
         }
         return holesNb;
+    }
+
+    private double normalizeNumberOfHoles(int holesNumber){
+        // max possible number of holes almost equals the surface of the game field,
+        // but in practice it wont be nearly as big. 20 is guessed average max
+        // holes number in game field.
+        // normalize to range <0; ~1?>
+        return ((double)holesNumber) / 20;
     }
 
     private int getColumnsSummedHeight() {
@@ -623,6 +631,12 @@ public class Engine {
         return summedHeight;
     }
 
+    private double normalizeColumnsSummedHeight(int columnsHeight) {
+        // max possible number of summed columns is equal to game field plane.
+        // normalize to range <0;1>
+        return ((double)columnsHeight) / (GAME_FIELD_SIZE_Y * GAME_FIELD_SIZE_X);
+    }
+
     private int getColumnsSummedHeightDifference() {
         int summedDifference = 0;
         int prevSummedHeight = -1;
@@ -632,8 +646,7 @@ public class Engine {
                     int summedHeight;
                     if (gameFieldArr[y][x] == 0) {
                         summedHeight = 0;
-                    }
-                    else {
+                    } else {
                         summedHeight = GAME_FIELD_SIZE_Y - y;
                     }
                     if (prevSummedHeight >= 0) {
@@ -645,6 +658,63 @@ public class Engine {
             }
         }
         return summedDifference;
+    }
+
+    private double normalizeColumnsSummedHeightDiff(int columnsHeightDiff) {
+        // max possible number of summed columns difference is almost equal to game field plane,
+        // but should appear rarely, so we take half of that.
+        // normalize to range <0;~1>
+        return ((double)columnsHeightDiff) / (((double)GAME_FIELD_SIZE_Y * (double)GAME_FIELD_SIZE_X)/2);
+    }
+
+    private int getMaxColumnHeight() {
+        int maxColumnHeight = 0;
+        for (int x = 0; x < GAME_FIELD_SIZE_X; x++) {
+            for (int y = 0; y < GAME_FIELD_SIZE_Y; y++) {
+                if (gameFieldArr[y][x] != GAME_FIELD_EMPTY) {
+                    int columnHeight = GAME_FIELD_SIZE_Y - y;
+                    if (columnHeight > maxColumnHeight) {
+                        maxColumnHeight = columnHeight;
+                    }
+                    break;
+                }
+            }
+        }
+        return maxColumnHeight;
+    }
+
+    private double normalizeMAxColumnHeight(int columnHeight) {
+        // normalize to range <0;1>
+        return ((double)columnHeight) / GAME_FIELD_SIZE_Y;
+    }
+
+    private int getPointsOfTouch() {
+        int pointsOfTouch = 0;
+        for (var brick : fallingTetrimino.getBricks()) {
+            Position brickPosition = brick.getPosition();
+            var x = brickPosition.getX();
+            var y = brickPosition.getY();
+            Position[] positionsToCheck = {
+                    new Position(x - 1, y),
+                    new Position(x + 1, y),
+                    new Position(x, y - 1),
+                    new Position(x, y + 1)};
+            for (var position : positionsToCheck) {
+                x = position.getX();
+                y = position.getY();
+                if (x >= GAME_FIELD_SIZE_X || x < 0 || y >= GAME_FIELD_SIZE_Y || y < 0
+                        || gameFieldArr[y][x] == GAME_FIELD_BRICK_STABLE) {
+                    pointsOfTouch++;
+                }
+            }
+        }
+        return pointsOfTouch;
+    }
+
+    private double normalizePointsOfTouch(int pointsNumber) {
+        // max possible points of touch is 9
+        // normalize to range <0;1>
+        return ((double)pointsNumber) / 9;
     }
 
     public void printGameFieldArr() {

@@ -2,6 +2,7 @@ package tetris.ai;
 
 import java.util.*;
 
+import static tetris.ai.Constants.NUMBER_OF_GENES;
 import static tetris.ai.RandomGenerator.randomGenerator;
 
 public class Evolution {
@@ -147,7 +148,7 @@ public class Evolution {
         var parent1Chromosome = parent1.getChromosome();
         var parent2Chromosome = parent2.getChromosome();
 
-        var newChromosome = new double[parent1Chromosome.length];
+        var newChromosome = new double[NUMBER_OF_GENES];
 
         for (int i = 0; i < parent1Chromosome.length; i++) {
             newChromosome[i] = parent1Chromosome[i] * (parent1.getFitness() + 0.001) +

@@ -42,7 +42,8 @@ public class Display extends Application {
     private Engine engine;
     private Action actionSelected = Action.NONE;
     private final boolean aiSimulation = true;
-    private double[] agentChromosome = {0.2958203318680887, -0.633914597381398, -0.6618196809613753, -0.26951312467562205};
+    private double[] agentChromosome =
+            {0.2345798518587024, -0.4741716759675339, -0.423557075514335, -0.17961032119803969, -0.48508398992300417, 0.5226533974187376};
     private Agent aiAgent = new Agent(agentChromosome);
 
     public static void main(String[] args) {

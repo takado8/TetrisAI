@@ -21,7 +21,7 @@ public class Constants {
     public static final double BRICK_DISPLAY_SIZE_ACTUAL = GAME_FIELD_DISPLAY_SIZE_X / GAME_FIELD_SIZE_X;
     public static final double BRICK_DISPLAY_SIZE_ADJUSTED = BRICK_DISPLAY_SIZE_ACTUAL - BRICK_STROKE_WIDTH;
     public static final double DELAY_SECONDS_SLOW = 0.75;
-    public static final double DELAY_SECONDS_NORMAL = 0.001;
+    public static final double DELAY_SECONDS_NORMAL = 0.0001;
     public static final double DELAY_SECONDS_FAST = 0.3;
     public static final double DELAY_SECONDS_SPEEDUP = 0.04;
     public static final double DELAY_SECONDS_DROP = 0.009;
