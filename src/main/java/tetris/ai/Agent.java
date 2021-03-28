@@ -9,16 +9,16 @@ import static tetris.ai.RandomGenerator.randomGenerator;
  * Agent is a unit that interacts with the environment and is subjected to evolution process.
  */
 public class Agent {
-    private final float[] chromosome;
-    private float fitness = 0;
+    private final double[] chromosome;
+    private double fitness = 0.0;
 
     /**
-     * Generates Agent with random chromosome gene values in range <0;1>
+     * Creates Agent with random chromosome gene values in range <0;1>
      */
     public Agent() {
-        chromosome = new float[NUMBER_OF_GENES];
+        chromosome = new double[NUMBER_OF_GENES];
         for (int i = 0; i < NUMBER_OF_GENES; i++) {
-            chromosome[i] = randomGenerator.nextFloat();
+            chromosome[i] = randomGenerator.nextDouble(-0.99,1);
         }
     }
 
@@ -27,7 +27,7 @@ public class Agent {
      *
      * @param chromosome new chromosome
      */
-    public Agent(float[] chromosome) {
+    public Agent(double[] chromosome) {
         this.chromosome = chromosome;
     }
 
@@ -36,7 +36,7 @@ public class Agent {
      */
     public void mutate() {
         int mutationIndex = randomGenerator.nextInt(chromosome.length);
-        chromosome[mutationIndex] += randomGenerator.nextFloat(-0.01f, 0.01f);
+        chromosome[mutationIndex] += randomGenerator.nextDouble(-0.01, 0.01);
         normalizeChromosome();
     }
 
@@ -51,23 +51,36 @@ public class Agent {
         }
     }
 
-    public float[] getChromosome() {
+    public double[] getChromosome() {
         return Arrays.copyOf(chromosome, chromosome.length);
     }
 
-    public float getFitness() {
+    public double getFitness() {
         return fitness;
     }
 
-    public void setFitness(float fitness) {
+    public void setFitness(double fitness) {
         this.fitness = fitness;
     }
 
-    public float evaluateMove(float[] inputs) {
-        float moveEvaluation = 0;
+    public double evaluateMove(double[] inputs) {
+        double moveEvaluation = 0.0;
         for (int i = 0; i < inputs.length; i++) {
             moveEvaluation += inputs[i] * chromosome[i];
         }
+//        System.out.println("move agent eval: " +moveEvaluation);
+//        System.out.println(Arrays.toString(chromosome));
         return moveEvaluation;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+//    @Override
+//    public int hashCode() {
+//
+//    }
 }
+

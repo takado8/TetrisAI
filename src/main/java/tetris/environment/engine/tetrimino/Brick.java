@@ -25,4 +25,9 @@ public class Brick {
     public void setPosition(Position position) {
         this.position = position;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
 }

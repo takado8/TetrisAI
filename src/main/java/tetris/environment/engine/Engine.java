@@ -1,10 +1,12 @@
 package tetris.environment.engine;
 
+import tetris.ai.Agent;
 import tetris.environment.engine.tetrimino.Brick;
 import tetris.environment.engine.tetrimino.Tetrimino;
 import tetris.environment.engine.tetrimino.TetriminoBuilder;
 import tetris.environment.engine.tetrimino.features.Position;
 import tetris.environment.engine.tetrimino.features.Shape;
+
 import java.util.*;
 
 import static tetris.environment.engine.Constants.*;
@@ -50,7 +52,7 @@ public class Engine {
     public StepResult step(Action action) {
         //region TESTING
         if (debuggingMode) {
-            printGameFieldArr();
+//            printGameFieldArr();
             int numb_of_falling_bricks = 0;
             for (var row : gameFieldArr) {
                 for (var field : row) {
@@ -67,6 +69,7 @@ public class Engine {
         // execute action from user/operator - rotate or move tetrimino left/right
         // allowed indefinitely during turn, user decides when to end turn by choosing action NEXT_TURN
         boolean tetriminoDropped = false;
+        boolean isFinalStep = false;
         if (action == Action.ROTATE) {
             rotateFallingTetrimino();
         } else if (canMove(action)) {
@@ -93,20 +96,21 @@ public class Engine {
                 // game is over
                 handleGameOver();
                 // return final StepResult
-                return new StepResult(true, tetriminoDropped, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
+                return new StepResult(true,tetriminoDropped,gameScore, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
             }
         }
-        return new StepResult(false, tetriminoDropped, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
+        return new StepResult(false, tetriminoDropped, gameScore, fallingTetrimino, new ArrayList<>(stableBricksMap.values()));
     }
 
     /**
      * Set environment to initial condition and return initial observation
      */
     public StepResult reset() {
+        gameScore = 0;
         fillGameFieldWithValuesEmpty();
         addNewFallingTetriminoToGameField();
         stableBricksMap.clear();
-        return new StepResult(false, fallingTetrimino, new ArrayList<>());
+        return new StepResult(false, 0, fallingTetrimino, new ArrayList<>());
     }
 
     /**
@@ -127,6 +131,7 @@ public class Engine {
      */
     private int RemoveCompletedLines() {
         //region TESTING
+        int nb_of_lines_by_simulation_function = getNumberOfCompleteLines();
         int nb0_of_empty_fields = 0;
         int nb0_of_stable_fields = 0;
         int nb0_of_moving_fields = 0;
@@ -147,7 +152,10 @@ public class Engine {
                     }
                 }
             }
-            assert nb0_of_stable_bricks == nb0_of_stable_fields : "Error 1 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
+//            printGameFieldArr();
+//            System.out.println("nb0 of stable bricks: " + nb0_of_stable_bricks);
+//            System.out.println("nb0 of stable fields: " + nb0_of_stable_fields);
+//            assert nb0_of_stable_bricks == nb0_of_stable_fields : "Error 1 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
             assert nb0_of_moving_fields <= 4 : "Error 2 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4";
             assert nb0_of_moving_fields <= 0 : "Error 3 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0";
             assert nb0_of_empty_fields == total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields : "Error 4 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields";
@@ -217,13 +225,14 @@ public class Engine {
                     }
                 }
             }
-            assert nb1_of_stable_bricks == nb1_of_stable_fields : "Error 5 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
+//            assert nb1_of_stable_bricks == nb1_of_stable_fields : "Error 5 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
             assert nb1_of_moving_fields <= 4 : "Error 6 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4";
             assert nb1_of_empty_fields == total_nb_of_fields - nb1_of_stable_fields - nb1_of_moving_fields : "Error 7 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields";
             assert nb0_of_empty_fields + nb_of_cleared_stable_bricks == nb1_of_empty_fields : "Error 8 in Engine.RemoveCompletedLines; nb0_of_empty_fields + nb_of_cleared_stable_bricks != nb1_of_empty_fields";
             assert nb0_of_stable_bricks - nb_of_cleared_stable_bricks == nb1_of_stable_bricks : "Error 9 in Engine.RemoveCompletedLines; nb0_of_stable_bricks - nb_of_cleared_stable_bricks != nb1_of_stable_bricks";
             assert nb0_of_stable_fields - nb_of_cleared_stable_bricks == nb1_of_stable_fields : "Error 10 in Engine.RemoveCompletedLines; nb0_of_stable_fields - nb_of_cleared_stable_bricks != nb1_of_stable_fields";
             assert nb1_of_moving_fields <= 0 : "Error 11 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0";
+            assert clearedLines == nb_of_lines_by_simulation_function: "Error 12 in Engine.RemoveCompletedLines; clearedLines == nb_of_lines_by_simulation_function";
         }
         //endregion
         return clearedLines;
@@ -247,8 +256,7 @@ public class Engine {
      * Handles game over
      */
     private void handleGameOver() {
-        totalGameScore += gameScore;
-        gameScore = 0;
+
     }
 
     /**
@@ -319,6 +327,10 @@ public class Engine {
         for (var newPosition : newPositions) {
             gameFieldArr[newPosition.getY()][newPosition.getX()] = GAME_FIELD_BRICK_FALLING;
         }
+//        if (debuggingMode){
+//            System.out.println("moving :" + action);
+//            printGameFieldArr();
+//        }
     }
 
     /**
@@ -368,14 +380,14 @@ public class Engine {
     /**
      * Rotates fallingTetrimino clockwise
      */
-    private void rotateFallingTetrimino() {
+    private boolean rotateFallingTetrimino() {
         if (fallingTetrimino.getShape() == Shape.SHAPE_O) {
-            return;  // O is symmetric in both dimensions, rotation has no effect
+            return true;  // O is symmetric in both dimensions, rotation has no effect
         }
         Brick[] bricks = fallingTetrimino.getBricks();
         Position centerOfRotation = bricks[1].getPosition();
 
-        Position [] newPositions = new Position[4];
+        Position[] newPositions = new Position[4];
         for (int i = 0; i < bricks.length; i++) {
             newPositions[i] = bricks[i].getPosition().rotate(centerOfRotation);
         }
@@ -388,7 +400,9 @@ public class Engine {
                 brick.setPosition(newPositions[i]);
                 gameFieldArr[newPositions[i].getY()][newPositions[i].getX()] = GAME_FIELD_BRICK_FALLING;
             }
+            return true;
         }
+        return false;
     }
 
     /**
@@ -415,8 +429,222 @@ public class Engine {
         return true;
     }
 
-    private void rotateTetriminoShapeO() {
-        // well, do nothing actually. Placeholder.
+    /**
+     * For AI purpose. simulates and evaluates by the AI every possible move,
+     * maps them and chooses best one, than sets falling tetrimino in correct position
+     * to end up in wanted state by falling down until end of the turn.
+     */
+    public void simulate(Agent aiAgent) {
+        // map to store every move evaluations (Double) as keys and SimulationResult as value,
+        // that contains moves needed to achieve particular state.
+        Map<Double, SimulationResult> evaluationMap = new HashMap<>();
+
+        // tetrimino is in its spawn position
+        // move it one down so it could rotate
+        int movesDownNeeded;
+        switch (fallingTetrimino.getShape()) {
+            case SHAPE_I:
+                movesDownNeeded = 2;
+                break;
+            case SHAPE_O:
+            case SHAPE_L:
+            case SHAPE_J:
+                movesDownNeeded = 0;
+                break;
+            case SHAPE_T:
+            case SHAPE_S:
+            case SHAPE_Z:
+                movesDownNeeded = 1;
+                break;
+            default:
+                movesDownNeeded = 0;
+        }
+        for (int i = 0; i < movesDownNeeded; i++) {
+            if (canMoveDown()) {
+                move(Action.MOVE_DOWN);
+            }
+        }
+        // count how many rotations occurred
+        int rotations = 0;
+        // loop and evaluate every possible state for every orientation
+        for (int k = 0; k < fallingTetrimino.getPossibleOrientationsNb(); k++) {
+            // tetrimino ends simulation in position x = 0, we need to remember how many moves
+            // right leeds to that state. same as with the orientation.
+            int movesRight = 0;
+            // move it max to left
+            while (canMove(Action.MOVE_LEFT)) {
+                move(Action.MOVE_LEFT);
+            }
+            boolean canMoveRight = true;
+            while (canMoveRight) {
+                // save starting position
+                Brick[] bricks = fallingTetrimino.getBricks();
+                Position[] bricksStartingPositions = new Position[4];
+                for (int i = 0; i < 4; i++) {
+                    bricksStartingPositions[i] = new Position(bricks[i].getPosition());
+                }
+                // move down
+                while (canMoveDown()) {
+                    move(Action.MOVE_DOWN);
+                }
+                // evaluate field
+                double []fieldFeaturesValues = new double[4];
+               fieldFeaturesValues[0] = getNumberOfCompleteLines();
+               fieldFeaturesValues[1] = getNumberOfHoles();
+               fieldFeaturesValues[2] = getColumnsSummedHeight();
+               fieldFeaturesValues[3] = getColumnsSummedHeightDifference();
+               double fieldEvaluation = aiAgent.evaluateMove(fieldFeaturesValues);
+//               System.out.println("field eval here in assingment: " + fieldEvaluation);
+//                for (int i = 0; i < 4; i++) {
+////                    System.out.println("field feature " + i + ": " + fieldFeaturesValues[i]);
+//                }
+               SimulationResult simulationResult = new SimulationResult(movesRight, rotations);
+               evaluationMap.put(fieldEvaluation, simulationResult);
+                // bring it to starting position
+                for (int i = 0; i < bricks.length; i++) {
+                    Brick brick = bricks[i];
+                    var brickPosition = brick.getPosition();
+                    gameFieldArr[brickPosition.getY()][brickPosition.getX()] = GAME_FIELD_EMPTY;
+                    gameFieldArr[bricksStartingPositions[i].getY()][bricksStartingPositions[i].getX()]
+                            = GAME_FIELD_BRICK_FALLING;
+                    brick.setPosition(bricksStartingPositions[i]);
+                }
+                // move one right
+                if (canMove(Action.MOVE_RIGHT)) {
+                    move(Action.MOVE_RIGHT);
+                    movesRight++;
+                } else {
+                    canMoveRight = false;
+                }
+            }
+            // next orientation
+            int infiniteLoopExit = 0;
+            while (!rotateFallingTetrimino() && infiniteLoopExit < 4) {
+                infiniteLoopExit++;
+                if (canMove(Action.MOVE_LEFT)) {
+                    move(Action.MOVE_LEFT);
+                }
+            }
+            rotations++;
+        }
+        // move it max to the left to bring it to state 0 from which we can get to
+        // best state according to evaluationMap key values, by following actions from
+        // SimulationResult in map values.
+        while (canMove(Action.MOVE_LEFT)) {
+            move(Action.MOVE_LEFT);
+        }
+        // get best result from evaluationMap
+        double maxValue = -Double.MAX_VALUE;
+        SimulationResult bestResult = null;//new SimulationResult(0,0);  // we want to crash if sth goes wrong and evaluationMap should never be empty
+//        System.out.println("len of eval map: " + evaluationMap.size());
+        for(var mapEntry : evaluationMap.entrySet()){
+            double moveEvaluation = mapEntry.getKey();
+
+//            System.out.println("still good eval: " + moveEvaluation);
+            if (moveEvaluation > maxValue){
+//                System.out.println("it is");
+                maxValue = moveEvaluation;
+                bestResult = mapEntry.getValue();
+            }
+        }
+//        System.out.println("and the best result is: " + bestResult);
+
+        // set tetrimino in wanted position
+        // not every tetrimino can rotate near wall, so we move it two times right,
+        // than rotate it and move it back to the left. This solution could be better, works for now.
+        // so two fields to the right
+        for (int i = 0; i < 2; i++) {
+            if (canMove(Action.MOVE_RIGHT)){
+                move(Action.MOVE_RIGHT);
+            }
+        }
+        // rotations
+        for (int i = 0; i < bestResult.getRotations(); i++) {
+            rotateFallingTetrimino();
+        }
+        // go back left
+        while (canMove(Action.MOVE_LEFT)) {
+            move(Action.MOVE_LEFT);
+        }
+        // now go right.
+        for (int i = 0; i < bestResult.getMovesRight(); i++) {
+            if (canMove(Action.MOVE_RIGHT)){
+                move(Action.MOVE_RIGHT);
+            }
+        }
+        // end of simulation. Tetrimino now is in position which AI predicts as best,
+        // can now fall down until next tetrimino spawns and simulation runs again.
+    }
+
+    private int getNumberOfCompleteLines() {
+        int completedLines = 0;
+        for (var line : gameFieldArr) {
+            int stableStates = 0;
+            for (var value : line) {
+                if (value == GAME_FIELD_BRICK_STABLE) {
+                    stableStates++;
+                }
+            }
+            if (stableStates == GAME_FIELD_SIZE_X) {
+                completedLines++;
+            }
+        }
+//        System.out.println("number of completed: " + completedLines);
+        return completedLines;
+    }
+
+    private int getNumberOfHoles() {
+        boolean startCountingHoles = false;
+        int holesNb = 0;
+        for (int x = 0; x < GAME_FIELD_SIZE_X; x++) {
+            for (int y = 0; y < GAME_FIELD_SIZE_Y; y++) {
+                if (gameFieldArr[y][x] != GAME_FIELD_EMPTY){
+                    startCountingHoles = true;
+                }
+                if (startCountingHoles && gameFieldArr[y][x] == GAME_FIELD_EMPTY){
+                    holesNb++;
+                }
+            }
+            startCountingHoles = false;
+        }
+        return holesNb;
+    }
+
+    private int getColumnsSummedHeight() {
+        int summedHeight = 0;
+        for (int x = 0; x < GAME_FIELD_SIZE_X; x++) {
+            for (int y = 0; y < GAME_FIELD_SIZE_Y; y++) {
+                if (gameFieldArr[y][x] != GAME_FIELD_EMPTY) {
+                    summedHeight += GAME_FIELD_SIZE_Y - y;
+                    break;
+                }
+            }
+        }
+        return summedHeight;
+    }
+
+    private int getColumnsSummedHeightDifference() {
+        int summedDifference = 0;
+        int prevSummedHeight = -1;
+        for (int x = 0; x < GAME_FIELD_SIZE_X; x++) {
+            for (int y = 0; y < GAME_FIELD_SIZE_Y; y++) {
+                if (gameFieldArr[y][x] != GAME_FIELD_EMPTY || y == GAME_FIELD_SIZE_Y - 1) {
+                    int summedHeight;
+                    if (gameFieldArr[y][x] == 0) {
+                        summedHeight = 0;
+                    }
+                    else {
+                        summedHeight = GAME_FIELD_SIZE_Y - y;
+                    }
+                    if (prevSummedHeight >= 0) {
+                        summedDifference += Math.abs(summedHeight - prevSummedHeight);
+                    }
+                    prevSummedHeight = summedHeight;
+                    break;
+                }
+            }
+        }
+        return summedDifference;
     }
 
     public void printGameFieldArr() {

@@ -15,6 +15,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import tetris.ai.Agent;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
 import tetris.environment.engine.Action;
@@ -39,6 +40,8 @@ public class Display extends Application {
 
     private Engine engine;
     private Action actionSelected = Action.NONE;
+    private final boolean aiSimulation = true;
+    private Agent aiAgent = new Agent();
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -69,7 +72,7 @@ public class Display extends Application {
                 initTimers(now);
                 if (isTimeToEndTurn(now)) {
                     // end turn, get result
-                    StepResult step_ = engine.step(actionSelected);
+                    engine.step(actionSelected);
                     StepResult stepResult = engine.step(Action.END_TURN);
                     if (stepResult.isFinalStep()) {
                         // stop the environment
@@ -78,6 +81,12 @@ public class Display extends Application {
                         return;
                     }
                     if (stepResult.isTetriminoDropped()) {
+                        // simulate
+                        // tetrimino dropped, so we need to simulate newly resp tetrimino
+                        // to put it in position ai chosen
+                        if (aiSimulation){
+                            engine.simulate(aiAgent);
+                        }
                         if (timeDelay != DELAY_SECONDS_NORMAL) {
                             timeDelay = DELAY_SECONDS_NORMAL;
                         }
@@ -194,6 +203,10 @@ public class Display extends Application {
         actionSelected = Action.NONE;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
+        // if AI simulation mode is active, run simulation for first tetrimino
+        if (aiSimulation){
+            engine.simulate(aiAgent);
+        }
         updateDisplay(stepResult);
     }
 

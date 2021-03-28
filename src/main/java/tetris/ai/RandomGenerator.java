@@ -6,10 +6,14 @@ import java.util.Random;
 public class RandomGenerator extends Random {
     public static final RandomGenerator randomGenerator = new RandomGenerator();
 
-    private RandomGenerator() {}
+    private RandomGenerator() {
+    }
 
-    public float nextFloat(float min, float max) {
-        return min + nextFloat() * (max - min);
+    /**
+     * Returns random double in range min inclusive; max exclusive)
+     */
+    public double nextDouble(double min, double max) {
+        return min + nextDouble() * (max - min);
     }
 
     /**

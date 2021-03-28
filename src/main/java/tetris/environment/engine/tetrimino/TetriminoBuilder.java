@@ -65,7 +65,7 @@ public class TetriminoBuilder {
             var position = new Position(spawnX + i, 0);
             bricks[i] = new Brick(position, color);
         }
-        return new Tetrimino(SHAPE_I, color, bricks);
+        return new Tetrimino(SHAPE_I, color, bricks, 2);
     }
 
     private Tetrimino buildTetriminoShapeO() {
@@ -78,7 +78,7 @@ public class TetriminoBuilder {
                 bricks[i * 2 + j] = new Brick(position, color);
             }
         }
-        return new Tetrimino(SHAPE_O, color, bricks);
+        return new Tetrimino(SHAPE_O, color, bricks, 1);
     }
 
     private Tetrimino buildTetriminoShapeT() {
@@ -91,7 +91,7 @@ public class TetriminoBuilder {
             bricks[i] = new Brick(position, color);
         }
         bricks[i] = new Brick(new Position(spawnX + 1, 1), color);
-        return new Tetrimino(SHAPE_T, color, bricks);
+        return new Tetrimino(SHAPE_T, color, bricks, 4);
     }
 
     private Tetrimino buildTetriminoShapeL() {
@@ -104,7 +104,7 @@ public class TetriminoBuilder {
             bricks[i] = new Brick(position, color);
         }
         bricks[i] = new Brick(new Position(spawnX + 1, i - 1), color);
-        return new Tetrimino(SHAPE_L, color, bricks);
+        return new Tetrimino(SHAPE_L, color, bricks, 4);
     }
 
     private Tetrimino buildTetriminoShapeJ() {
@@ -117,7 +117,7 @@ public class TetriminoBuilder {
             bricks[i] = new Brick(position, color);
         }
         bricks[i] = new Brick(new Position(spawnX, i - 1), color);
-        return new Tetrimino(SHAPE_J, color, bricks);
+        return new Tetrimino(SHAPE_J, color, bricks, 4);
     }
 
     private Tetrimino buildTetriminoShapeS() {
@@ -133,7 +133,7 @@ public class TetriminoBuilder {
             Position position = new Position(spawnX + i, 1);
             bricks[i] = new Brick(position, color);
         }
-        return new Tetrimino(SHAPE_S, color, bricks);
+        return new Tetrimino(SHAPE_S, color, bricks, 2);
     }
 
     private Tetrimino buildTetriminoShapeZ() {
@@ -149,7 +149,7 @@ public class TetriminoBuilder {
             Position position = new Position(spawnX + i - 1, 1);
             bricks[i] = new Brick(position, color);
         }
-        return new Tetrimino(SHAPE_Z, color, bricks);
+        return new Tetrimino(SHAPE_Z, color, bricks, 2);
     }
 
     /**

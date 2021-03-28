@@ -9,6 +9,11 @@ public class Position {
         this.y = y;
     }
 
+    public Position(Position position){
+        this.x = position.getX();
+        this.y = position.getY();
+    }
+
     /**
      * Rotates position around center by 90 degrees by default for this game
      * @param center center of rotation
