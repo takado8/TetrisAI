@@ -11,17 +11,15 @@ import static tetris.environment.display.Constants.*;
  * Makes displayable Rectangle from {@code Brick}
  */
 public class BrickDisplay extends Rectangle {
-    public final int id;
 
     public BrickDisplay(Brick brick) {
         super(translatePositionX(brick), translatePositionY(brick),
                 BRICK_DISPLAY_SIZE_ADJUSTED, BRICK_DISPLAY_SIZE_ADJUSTED);
-        setFill(Color.web(brick.color.getHexString()));
+        setFill(Color.web(brick.getColor().getHexString()));
         setArcWidth(5);
         setArcHeight(5);
         setStrokeWidth(BRICK_STROKE_WIDTH);
         setStroke(Color.web(BRICK_STROKE_COLOR_HEX));
-        this.id = brick.id;
     }
 
     /**

@@ -6,7 +6,7 @@ import static tetris.ai.Constants.*;
 import static tetris.ai.RandomGenerator.randomGenerator;
 
 /**
- * Agent is a unit that interacts with the environment and is subjected to evolution process.
+ * Unit that interacts with the environment and is subjected to evolution process.
  */
 public class Agent {
     private final double[] chromosome;
@@ -32,7 +32,20 @@ public class Agent {
     }
 
     /**
-     *  Mutates random gene value by random value, fixed range for now.
+     * Multiplies each input by the corresponding chromosome value and sums the results.
+     * @param inputs array of values of the game field features
+     * @return move evaluation
+     */
+    public double evaluateMove(double[] inputs) {
+        double moveEvaluation = 0.0;
+        for (int i = 0; i < inputs.length; i++) {
+            moveEvaluation += inputs[i] * chromosome[i];
+        }
+        return moveEvaluation;
+    }
+
+    /**
+     *  Mutates random gene value by random value, in range of +/- MUTATION_VALUE
      */
     public void mutate() {
         int mutationIndex = randomGenerator.nextInt(chromosome.length);
@@ -61,16 +74,6 @@ public class Agent {
 
     public void setFitness(double fitness) {
         this.fitness = fitness;
-    }
-
-    public double evaluateMove(double[] inputs) {
-        double moveEvaluation = 0.0;
-        for (int i = 0; i < inputs.length; i++) {
-            moveEvaluation += inputs[i] * chromosome[i];
-        }
-//        System.out.println("move agent eval: " +moveEvaluation);
-//        System.out.println(Arrays.toString(chromosome));
-        return moveEvaluation;
     }
 
     @Override

@@ -12,8 +12,8 @@ public class HeadlessMain {
     public static void main(String[] args) {
         System.out.println("Headless main()");
         int nbOfGenerations = 2000;
-        int populationSize = 200;
-        int maxTurns = 1500; // max 600 score
+        int populationSize = 240;
+        int maxTurns = 1000; // max 400 score
         int maxGames = 10;
         double bestScore = -Double.MAX_VALUE;
         Agent bestAgent = new Agent();
@@ -54,8 +54,6 @@ public class HeadlessMain {
                     }
                     // game is over, save agent results
                     agentScores += stepResult.getGameScore();
-
-
                 }
                 generationScores += agentScores;
                 agentScores /= maxGames;

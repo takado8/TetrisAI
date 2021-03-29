@@ -7,10 +7,8 @@ import tetris.environment.engine.tetrimino.features.Position;
  * Smallest part of the {@code Tetrimino} block.
  */
 public class Brick {
-    private static int idCounter = 0;
 
-    public final int id = idCounter++;
-    public final Color color;
+    private final Color color;
     private Position position;
 
     public Brick(Position position, Color color) {
@@ -26,8 +24,13 @@ public class Brick {
         this.position = position;
     }
 
+    public Color getColor() {
+        return color;
+    }
+
     @Override
     public boolean equals(Object o) {
         return this == o;
     }
+
 }

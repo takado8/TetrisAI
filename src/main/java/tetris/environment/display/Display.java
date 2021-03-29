@@ -16,12 +16,12 @@ import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import tetris.ai.Agent;
+import tetris.environment.Environment;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
 import tetris.environment.engine.Action;
 import tetris.environment.engine.tetrimino.Brick;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,15 +35,15 @@ public class Display extends Application {
     private final List<BrickDisplay> brickDisplayList = new ArrayList<>();
 
     private AnimationTimer gameLoop;
-    private Long lastUpdate = 0L;
+    private Long lastTurnUpdate = 0L;
     private Long lastResponseUpdate = 0L;
     private double timeDelay = DELAY_SECONDS_NORMAL;
 
-    private Engine engine;
+    private Environment engine;
     private Action actionSelected = Action.NONE;
     private final boolean aiSimulation = true;
     private final double[] agentChromosome =
-            {0.04777338863226396, -0.6920428927415108, 0.2208191772499458, 0.123386107641129, -0.5927447128107285, 0.3216563426691729};
+            {0.2882804024680882, -0.4941227037791766, -0.4138605915149467, -0.0647607979215204, 0.5306732616460637, -0.46437969634792153};
     private final Agent aiAgent = new Agent(agentChromosome);
 
     public static void main(String[] args) {
@@ -79,13 +79,13 @@ public class Display extends Application {
                     StepResult stepResult = engine.step(Action.END_TURN);
                     if (stepResult.isFinalStep()) {
                         // stop the loop, display end label
-                        handleFinalState();
+                        handleFinalStep();
                         return;
                     }
                     if (stepResult.isTetriminoDropped()) {
-                        // simulate
                         // tetrimino dropped, so we need to simulate newly resp tetrimino
-                        // to put it in position ai chosen
+                        // to put it in correct position;
+                        // simulate
                         if (aiSimulation) {
                             engine.simulate(aiAgent);
                         }
@@ -95,7 +95,7 @@ public class Display extends Application {
                     }
                     updateDisplay(stepResult);
                     stopRotationAction();
-                    lastUpdate = now;
+                    lastTurnUpdate = now;
                 }
                 if (isTimeToRespond(now)) {
                     // make action selected by user
@@ -127,7 +127,7 @@ public class Display extends Application {
         }
     }
 
-    private void handleFinalState() {
+    private void handleFinalStep() {
         gameLoop.stop();
         scoreLabel.setText(generateGameOverString());
     }
@@ -137,7 +137,7 @@ public class Display extends Application {
     }
 
     private boolean isTimeToEndTurn(long now) {
-        return now - lastUpdate >= timeDelay * 1_000_000_000.0;
+        return now - lastTurnUpdate >= timeDelay * 1_000_000_000.0;
     }
 
     private boolean isTimeToRespond(long now) {
@@ -223,7 +223,7 @@ public class Display extends Application {
         // clear brick list
         brickDisplayList.clear();
         // reset timers
-        lastUpdate = 0L;
+        lastTurnUpdate = 0L;
         lastResponseUpdate = 0L;
         // clear action
         actionSelected = Action.NONE;
@@ -260,8 +260,8 @@ public class Display extends Application {
     }
 
     void initTimers(long now) {
-        if (lastUpdate == 0L) {
-            lastUpdate = now;
+        if (lastTurnUpdate == 0L) {
+            lastTurnUpdate = now;
         }
         if (lastResponseUpdate == 0L) {
             lastResponseUpdate = now;

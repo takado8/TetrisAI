@@ -1,6 +1,7 @@
 package tetris.environment.engine;
 
 import tetris.ai.Agent;
+import tetris.environment.Environment;
 import tetris.environment.engine.tetrimino.Brick;
 import tetris.environment.engine.tetrimino.Tetrimino;
 import tetris.environment.engine.tetrimino.TetriminoBuilder;
@@ -15,15 +16,14 @@ import static tetris.environment.engine.Constants.*;
  * Responsible for game logic - maintaining game field,
  * moving Tetrimino etc.
  */
-public class Engine {
+public class Engine implements Environment {
+    private final boolean debuggingMode;
     private final int[][] gameFieldArr;
     private final TetriminoBuilder tetriminoBuilder;
     private final Map<Position, Brick> stableBricksMap;
 
     private Tetrimino fallingTetrimino;
     private int gameScore = 0;
-    private int totalGameScore = 0;
-    private final boolean debuggingMode;
 
     public Engine() {
         System.out.println("\nInitializing game engine.");
@@ -69,7 +69,6 @@ public class Engine {
         // execute action from user/operator - rotate or move tetrimino left/right
         // allowed indefinitely during turn, user decides when to end turn by choosing action NEXT_TURN
         boolean tetriminoDropped = false;
-        boolean isFinalStep = false;
         if (action == Action.ROTATE) {
             rotateFallingTetrimino();
         } else if (canMove(action)) {
@@ -489,12 +488,12 @@ public class Engine {
                 }
                 // evaluate field
                 double[] fieldFeaturesValues = new double[6];
-                fieldFeaturesValues[0] = normalizeNumberOfLines(getNumberOfCompleteLines());
-                fieldFeaturesValues[1] = normalizeNumberOfHoles(getNumberOfHoles());
-                fieldFeaturesValues[2] = normalizeColumnsSummedHeight(getColumnsSummedHeight());
-                fieldFeaturesValues[3] = normalizeColumnsSummedHeightDiff(getColumnsSummedHeightDifference());
-                fieldFeaturesValues[4] = normalizeMaxColumnHeight(getMaxColumnHeight());
-                fieldFeaturesValues[5] = normalizePointsOfTouch(getPointsOfTouch());
+                fieldFeaturesValues[0] = getNumberOfCompleteLines();
+                fieldFeaturesValues[1] = getNumberOfHoles();
+                fieldFeaturesValues[2] = getColumnsSummedHeight();
+                fieldFeaturesValues[3] = getColumnsSummedHeightDifference();
+                fieldFeaturesValues[4] = getPointsOfTouch();
+                fieldFeaturesValues[5] = getMaxColumnHeight();
 
                 double fieldEvaluation = aiAgent.evaluateMove(fieldFeaturesValues);
 
