@@ -42,9 +42,9 @@ public class Display extends Application {
     private Engine engine;
     private Action actionSelected = Action.NONE;
     private final boolean aiSimulation = true;
-    private double[] agentChromosome =
-            {0.2345798518587024, -0.4741716759675339, -0.423557075514335, -0.17961032119803969, -0.48508398992300417, 0.5226533974187376};
-    private Agent aiAgent = new Agent(agentChromosome);
+    private final double[] agentChromosome =
+            {0.04777338863226396, -0.6920428927415108, 0.2208191772499458, 0.123386107641129, -0.5927447128107285, 0.3216563426691729};
+    private final Agent aiAgent = new Agent(agentChromosome);
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -78,45 +78,62 @@ public class Display extends Application {
                     engine.step(actionSelected);
                     StepResult stepResult = engine.step(Action.END_TURN);
                     if (stepResult.isFinalStep()) {
-                        // stop the environment
-                        gameLoop.stop();
-                        scoreLabel.setText("GAME OVER");
+                        // stop the loop, display end label
+                        handleFinalState();
                         return;
                     }
                     if (stepResult.isTetriminoDropped()) {
                         // simulate
                         // tetrimino dropped, so we need to simulate newly resp tetrimino
                         // to put it in position ai chosen
-                        if (aiSimulation){
+                        if (aiSimulation) {
                             engine.simulate(aiAgent);
                         }
-                        if (timeDelay != DELAY_SECONDS_NORMAL) {
-                            timeDelay = DELAY_SECONDS_NORMAL;
-                        }
+                        resetGameSpeed();
                         // update score
-                        if (stepResult.getGameScore() != gameScore){
-                            gameScore = stepResult.getGameScore();
-                            scoreLabel.setText("Score: " + (int)gameScore);
-                        }
-                    }
-                    if (actionSelected == Action.ROTATE) {
-                        actionSelected = Action.NONE;
+                        updateScoreLabel(stepResult);
                     }
                     updateDisplay(stepResult);
+                    stopRotationAction();
                     lastUpdate = now;
                 }
                 if (isTimeToRespond(now)) {
                     // make action selected by user
                     StepResult stepResult = engine.step(actionSelected);
-                    if (actionSelected == Action.ROTATE) {
-                        actionSelected = Action.NONE;
-                    }
+                    stopRotationAction();
                     updateDisplay(stepResult);
                     lastResponseUpdate = now;
                 }
             }
+            private void updateScoreLabel(StepResult stepResult) {
+                if (stepResult.getGameScore() != gameScore) {
+                    gameScore = stepResult.getGameScore();
+                    scoreLabel.setText("Score: " + (int) gameScore);
+                }
+            }
         };
         gameLoop.start();
+    }
+
+    private void stopRotationAction() {
+        if (actionSelected == Action.ROTATE) {
+            actionSelected = Action.NONE;
+        }
+    }
+
+    private void resetGameSpeed() {
+        if (timeDelay != DELAY_SECONDS_NORMAL) {
+            timeDelay = DELAY_SECONDS_NORMAL;
+        }
+    }
+
+    private void handleFinalState() {
+        gameLoop.stop();
+        scoreLabel.setText(generateGameOverString());
+    }
+
+    private String generateGameOverString() {
+        return "Score: " + gameScore;
     }
 
     private boolean isTimeToEndTurn(long now) {
@@ -152,7 +169,7 @@ public class Display extends Application {
         // setup right menu
         // Score label
         scoreLabel = new Label("Score: ");
-        scoreLabel.setLayoutX(SCENE_SIZE_X - 150);
+        scoreLabel.setLayoutX(GAME_FIELD_DISPLAY_SIZE_X + 2 * GAME_FIELD_DISPLAY_MARGIN);
         scoreLabel.setLayoutY(GAME_FIELD_DISPLAY_MARGIN);
         scoreLabel.setTextFill(Color.WHITESMOKE);
         scoreLabel.setFont(Font.font("Trebuchet MS", FontWeight.NORMAL, FontPosture.REGULAR, 20));
@@ -216,7 +233,7 @@ public class Display extends Application {
         gameScore = stepResult.getGameScore();
         scoreLabel.setText("Score: " + gameScore);
         // if AI simulation mode is active, run simulation for first tetrimino
-        if (aiSimulation){
+        if (aiSimulation) {
             engine.simulate(aiAgent);
         }
         updateDisplay(stepResult);
@@ -242,7 +259,7 @@ public class Display extends Application {
         primaryStage.setTitle("TetrisAI");
     }
 
-    void initTimers (long now) {
+    void initTimers(long now) {
         if (lastUpdate == 0L) {
             lastUpdate = now;
         }

@@ -489,12 +489,12 @@ public class Engine {
                 }
                 // evaluate field
                 double[] fieldFeaturesValues = new double[6];
-                fieldFeaturesValues[0] = getNumberOfCompleteLines();
-                fieldFeaturesValues[1] = getNumberOfHoles();
-                fieldFeaturesValues[2] = getColumnsSummedHeight();
-                fieldFeaturesValues[3] = getColumnsSummedHeightDifference();
-                fieldFeaturesValues[4] = getMaxColumnHeight();
-                fieldFeaturesValues[5] = getPointsOfTouch();
+                fieldFeaturesValues[0] = normalizeNumberOfLines(getNumberOfCompleteLines());
+                fieldFeaturesValues[1] = normalizeNumberOfHoles(getNumberOfHoles());
+                fieldFeaturesValues[2] = normalizeColumnsSummedHeight(getColumnsSummedHeight());
+                fieldFeaturesValues[3] = normalizeColumnsSummedHeightDiff(getColumnsSummedHeightDifference());
+                fieldFeaturesValues[4] = normalizeMaxColumnHeight(getMaxColumnHeight());
+                fieldFeaturesValues[5] = normalizePointsOfTouch(getPointsOfTouch());
 
                 double fieldEvaluation = aiAgent.evaluateMove(fieldFeaturesValues);
 
@@ -683,7 +683,7 @@ public class Engine {
         return maxColumnHeight;
     }
 
-    private double normalizeMAxColumnHeight(int columnHeight) {
+    private double normalizeMaxColumnHeight(int columnHeight) {
         // normalize to range <0;1>
         return ((double)columnHeight) / GAME_FIELD_SIZE_Y;
     }

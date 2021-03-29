@@ -21,7 +21,6 @@ public class Evolution {
         this.mutationRate = mutationRate;
         // generate random population
         generateRandomPopulation();
-
     }
 
     private void generateRandomPopulation() {
@@ -30,19 +29,19 @@ public class Evolution {
         }
     }
 
+    /**
+     * Main training function. Goes through every step of evolution process.
+     * Called every time after population evaluation by interacting with the environment.
+     */
     public void nextGeneration() {
+
         // select agents to reproduce
         int poolSize = (int) (populationSize * reproductionRate);
-//        System.out.println("pool size: " + poolSize);
         List<Agent> reproductionPool = selectPoolByTournament(poolSize);
-//        System.out.println("reprpool size: " + reproductionPool.size());
         // reproduce
         List<Agent> offspring = reproduce(reproductionPool, poolSize);
-//        System.out.println("offspring size: " + offspring.size());
-
         // select dead pool
         List<Agent> deadPool = selectPoolByTournament(poolSize, true);
-//        System.out.println("dead pool size: " + deadPool.size());
         // remove deadPool from population
         removeDeadPool(deadPool);
         // merge offspring with population
@@ -53,8 +52,8 @@ public class Evolution {
      }
 
     /**
-     * For every agent in pool combines two agents chromosomes and returns
-     * list of new agent with combined chromosomes.
+     * Randomly draws from pool two agents, combines their chromosomes in the crossing-over process
+     * and returns list of new agents with combined chromosomes;
      */
     private List<Agent> reproduce(List<Agent> reproductionPool, int offspringNumber) {
         List<Agent> offspring = new ArrayList<>();
@@ -109,8 +108,16 @@ public class Evolution {
                 selectedPool.add(agent2);
             }
         }
+
         return new ArrayList<>(selectedPool);
+
     }
+
+    private void eeee(Object isGreaterThan) {
+
+    }
+
+
 
     private List<Agent> selectPoolByTournament(int poolSize, boolean selectWeaker) {
         var selectedPool = new HashSet<Agent>();
