@@ -10,6 +10,8 @@ public class Constants {
     public static final String SCENE_BACKGROUND_COLOR_HEX = "#222222";
     public static final String GAME_FIELD_BACKGROUND_COLOR_HEX = "#4e4e50";
     public static final String BRICK_STROKE_COLOR_HEX = "#000000";
+    public static final String GAME_FIELD_STROKE_COLOR_HEX = "#666666";
+    public static final String SCORE_LABEL_TXT = "Score: ";
 
     public static final double SCENE_SIZE_Y = 650;
     public static final double SCENE_SIZE_X = 550;
@@ -21,11 +23,16 @@ public class Constants {
     public static final double BRICK_DISPLAY_SIZE_ACTUAL = GAME_FIELD_DISPLAY_SIZE_X / GAME_FIELD_SIZE_X;
     public static final double BRICK_DISPLAY_SIZE_ADJUSTED = BRICK_DISPLAY_SIZE_ACTUAL - BRICK_STROKE_WIDTH;
     public static final double DELAY_SECONDS_SLOW = 0.75;
-    public static final double DELAY_SECONDS_NORMAL = 0.0001;
+    public static final double DELAY_SECONDS_NORMAL = 0.5;
     public static final double DELAY_SECONDS_FAST = 0.3;
+    public static final double DELAY_SECONDS_AI = 0.016;
     public static final double DELAY_SECONDS_SPEEDUP = 0.04;
     public static final double DELAY_SECONDS_DROP = 0.009;
     public static final double RESPONSE_DELAY_SECONDS = 0.15;
+    public static final double NANOSECONDS_IN_SECOND = 1_000_000_000.0;
+    public static final double[] AGENT_CHROMOSOME = {0.20969192396748637, -0.7585971637868841, -0.394429272962703, -0.14184590734817043, 0.3628001052066201, -0.2706307650250841};
+
+
 }
 
 

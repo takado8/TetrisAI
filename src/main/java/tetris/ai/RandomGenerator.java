@@ -9,6 +9,7 @@ public class RandomGenerator extends Random {
     private RandomGenerator() {
     }
 
+
     /**
      * Returns random double in range min inclusive; max exclusive)
      */

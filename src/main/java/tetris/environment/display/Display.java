@@ -19,7 +19,6 @@ import tetris.ai.Agent;
 import tetris.environment.Environment;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
-import tetris.environment.engine.Action;
 import tetris.environment.engine.tetrimino.Brick;
 
 import java.util.ArrayList;
@@ -29,22 +28,32 @@ import static tetris.environment.display.Constants.*;
 
 
 public class Display extends Application {
+    // game engine
+    private Environment engine;
+    // display objects
     private Group root;
     private Label scoreLabel;
     private double gameScore = 0.0;
     private final List<BrickDisplay> brickDisplayList = new ArrayList<>();
-
+    // asynchronous loop to run the game
+    private Action actionSelected = Action.NONE;
     private AnimationTimer gameLoop;
     private Long lastTurnUpdate = 0L;
     private Long lastResponseUpdate = 0L;
-    private double timeDelay = DELAY_SECONDS_NORMAL;
+    private double timeDelayNormal;
+    private double timeDelay;
+    // ai
+    private boolean aiSimulation = true;
+    private final Agent aiAgent = new Agent(AGENT_CHROMOSOME);
 
-    private Environment engine;
-    private Action actionSelected = Action.NONE;
-    private final boolean aiSimulation = true;
-    private final double[] agentChromosome =
-            {0.2882804024680882, -0.4941227037791766, -0.4138605915149467, -0.0647607979215204, 0.5306732616460637, -0.46437969634792153};
-    private final Agent aiAgent = new Agent(agentChromosome);
+    public Display() {
+        if (aiSimulation) {
+            timeDelayNormal = DELAY_SECONDS_AI;
+        } else {
+            timeDelayNormal = DELAY_SECONDS_NORMAL;
+        }
+        timeDelay = timeDelayNormal;
+    }
 
     public static void main(String[] args) {
         System.out.println("Launching main.");
@@ -56,7 +65,6 @@ public class Display extends Application {
         // init game engine
         engine = new Engine(true);
         // init Display
-        System.out.println("Display.start()");
         // make root
         root = new Group();
         // setup scene
@@ -78,19 +86,15 @@ public class Display extends Application {
                     engine.step(actionSelected);
                     StepResult stepResult = engine.step(Action.END_TURN);
                     if (stepResult.isFinalStep()) {
-                        // stop the loop, display end label
                         handleFinalStep();
                         return;
                     }
                     if (stepResult.isTetriminoDropped()) {
                         // tetrimino dropped, so we need to simulate newly resp tetrimino
-                        // to put it in correct position;
-                        // simulate
                         if (aiSimulation) {
                             engine.simulate(aiAgent);
                         }
                         resetGameSpeed();
-                        // update score
                         updateScoreLabel(stepResult);
                     }
                     updateDisplay(stepResult);
@@ -98,17 +102,10 @@ public class Display extends Application {
                     lastTurnUpdate = now;
                 }
                 if (isTimeToRespond(now)) {
-                    // make action selected by user
                     StepResult stepResult = engine.step(actionSelected);
                     stopRotationAction();
                     updateDisplay(stepResult);
                     lastResponseUpdate = now;
-                }
-            }
-            private void updateScoreLabel(StepResult stepResult) {
-                if (stepResult.getGameScore() != gameScore) {
-                    gameScore = stepResult.getGameScore();
-                    scoreLabel.setText("Score: " + (int) gameScore);
                 }
             }
         };
@@ -121,9 +118,16 @@ public class Display extends Application {
         }
     }
 
+    private void updateScoreLabel(StepResult stepResult) {
+        if (stepResult.getGameScore() != gameScore) {
+            gameScore = stepResult.getGameScore();
+            scoreLabel.setText("Score: " + (int) gameScore);
+        }
+    }
+
     private void resetGameSpeed() {
-        if (timeDelay != DELAY_SECONDS_NORMAL) {
-            timeDelay = DELAY_SECONDS_NORMAL;
+        if (timeDelay != timeDelayNormal) {
+            timeDelay = timeDelayNormal;
         }
     }
 
@@ -137,11 +141,11 @@ public class Display extends Application {
     }
 
     private boolean isTimeToEndTurn(long now) {
-        return now - lastTurnUpdate >= timeDelay * 1_000_000_000.0;
+        return now - lastTurnUpdate >= timeDelay * NANOSECONDS_IN_SECOND;
     }
 
     private boolean isTimeToRespond(long now) {
-        return now - lastResponseUpdate >= RESPONSE_DELAY_SECONDS * 1_000_000_000.0;
+        return now - lastResponseUpdate >= RESPONSE_DELAY_SECONDS * NANOSECONDS_IN_SECOND;
     }
 
     private void updateDisplay(StepResult stepResult) {
@@ -150,6 +154,7 @@ public class Display extends Application {
         for (BrickDisplay brick : brickDisplayList) {
             root.getChildren().remove(brick);
         }
+
         brickDisplayList.clear();
         for (Brick brick : stepResult.getBricks()) {
             BrickDisplay brickDisplay = new BrickDisplay(brick);
@@ -158,32 +163,35 @@ public class Display extends Application {
         }
     }
 
-    public Scene setupScene() {
-        Scene scene = new Scene(root, SCENE_SIZE_X, SCENE_SIZE_Y, Color.web(SCENE_BACKGROUND_COLOR_HEX));
-        var rootChildren = root.getChildren();
-        // setup game field
+    Rectangle makeGameField() {
         Rectangle gameField = new Rectangle(GAME_FIELD_DISPLAY_MARGIN, GAME_FIELD_DISPLAY_MARGIN,
                 GAME_FIELD_DISPLAY_SIZE_X, GAME_FIELD_DISPLAY_SIZE_Y);
         gameField.setFill(Color.web(GAME_FIELD_BACKGROUND_COLOR_HEX));
-        rootChildren.add(gameField);
-        // setup right menu
-        // Score label
-        scoreLabel = new Label("Score: ");
+        gameField.setArcWidth(5);
+        gameField.setArcHeight(5);
+        gameField.setStrokeWidth(1);
+        gameField.setStroke(Color.web(GAME_FIELD_STROKE_COLOR_HEX));
+        return gameField;
+    }
+
+    private Label makeScoreLabel() {
+        Label scoreLabel = new Label(SCORE_LABEL_TXT);
         scoreLabel.setLayoutX(GAME_FIELD_DISPLAY_SIZE_X + 2 * GAME_FIELD_DISPLAY_MARGIN);
         scoreLabel.setLayoutY(GAME_FIELD_DISPLAY_MARGIN);
         scoreLabel.setTextFill(Color.WHITESMOKE);
         scoreLabel.setFont(Font.font("Trebuchet MS", FontWeight.NORMAL, FontPosture.REGULAR, 20));
-        rootChildren.add(scoreLabel);
-        // Some labels for evolution (later)
+        return scoreLabel;
+    }
 
-        // buttons
-        Button startButton = new Button("Start");
-        startButton.setLayoutX(SCENE_SIZE_X - 150);
-        startButton.setLayoutY(SCENE_SIZE_Y / 2);
-        startButton.setDefaultButton(false);
-        startButton.setFocusTraversable(false);
-        startButton.setOnAction(this::startButtonClicked);
-        rootChildren.add(startButton);
+    public Scene setupScene() {
+        Scene scene = new Scene(root, SCENE_SIZE_X, SCENE_SIZE_Y, Color.web(SCENE_BACKGROUND_COLOR_HEX));
+        var rootChildren = root.getChildren();
+        // setup game field
+        rootChildren.add(makeGameField());
+        // setup right menu
+        scoreLabel = makeScoreLabel();
+        rootChildren.add(scoreLabel);
+        rootChildren.add(makeStartButton());
         // keyboard listener
         scene.addEventFilter(KeyEvent.KEY_PRESSED, this::keyboardListener);
         scene.addEventFilter(KeyEvent.KEY_RELEASED, this::keyboardListenerRelease);
@@ -193,7 +201,7 @@ public class Display extends Application {
     private void keyboardListenerRelease(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.DOWN) {
-            timeDelay = DELAY_SECONDS_NORMAL;
+            timeDelay = timeDelayNormal;
         }
         if (keyCode == KeyCode.LEFT || keyCode == KeyCode.RIGHT) {
             actionSelected = Action.NONE;
@@ -229,7 +237,7 @@ public class Display extends Application {
         actionSelected = Action.NONE;
         // set initial state of game environment and get first observation
         StepResult stepResult = engine.reset();
-        // reset game scores
+        // reset game score
         gameScore = stepResult.getGameScore();
         scoreLabel.setText("Score: " + gameScore);
         // if AI simulation mode is active, run simulation for first tetrimino
@@ -247,6 +255,16 @@ public class Display extends Application {
         reset();
         // start game
         startGame();
+    }
+
+    private Button makeStartButton() {
+        Button startButton = new Button("Start");
+        startButton.setLayoutX(SCENE_SIZE_X - 150);
+        startButton.setLayoutY(SCENE_SIZE_Y / 2);
+        startButton.setDefaultButton(false);
+        startButton.setFocusTraversable(false);
+        startButton.setOnAction(this::startButtonClicked);
+        return startButton;
     }
 
     private void setWindowParameters(Stage primaryStage) {

@@ -76,9 +76,5 @@ public class Agent {
         this.fitness = fitness;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return this == o;
-    }
 }
 

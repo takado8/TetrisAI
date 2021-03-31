@@ -24,7 +24,7 @@ public class TetriminoBuilder {
      */
     public Tetrimino buildNewTetrimino() {
         // get shape for new tetrimino
-        Shape shape = shapeGenerator.getNextShape();
+        Shape shape = shapeGenerator.getShape();
         // build and return tetrimino
         switch (shape) {
             case SHAPE_I:
@@ -159,5 +159,8 @@ public class TetriminoBuilder {
         return GAME_FIELD_SIZE_X / 2 - 1;
     }
 
+    public Shape getNextShape() {
+        return shapeGenerator.getNextShape();
+    }
 
 }

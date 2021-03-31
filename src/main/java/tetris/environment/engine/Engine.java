@@ -18,18 +18,15 @@ import static tetris.environment.engine.Constants.*;
  */
 public class Engine implements Environment {
     private final boolean debuggingMode;
-    private final int[][] gameFieldArr;
-    private final TetriminoBuilder tetriminoBuilder;
-    private final Map<Position, Brick> stableBricksMap;
+    private final int[][] gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
+    private final TetriminoBuilder tetriminoBuilder = new TetriminoBuilder();
+    private final Map<Position, Brick> stableBricksMap = new HashMap<>();
 
     private Tetrimino fallingTetrimino;
     private int gameScore = 0;
 
     public Engine() {
         System.out.println("\nInitializing game engine.");
-        gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
-        tetriminoBuilder = new TetriminoBuilder();
-        stableBricksMap = new HashMap<>();
         this.debuggingMode = false;
         fillGameFieldWithValuesEmpty();
     }
@@ -37,9 +34,6 @@ public class Engine implements Environment {
     public Engine(boolean debuggingMode) {
         System.out.println("\nInitializing game engine in debugging mode " + debuggingMode);
         this.debuggingMode = debuggingMode;
-        gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
-        tetriminoBuilder = new TetriminoBuilder();
-        stableBricksMap = new HashMap<>();
         fillGameFieldWithValuesEmpty();
     }
 
@@ -151,10 +145,6 @@ public class Engine implements Environment {
                     }
                 }
             }
-//            printGameFieldArr();
-//            System.out.println("nb0 of stable bricks: " + nb0_of_stable_bricks);
-//            System.out.println("nb0 of stable fields: " + nb0_of_stable_fields);
-//            assert nb0_of_stable_bricks == nb0_of_stable_fields : "Error 1 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
             assert nb0_of_moving_fields <= 4 : "Error 2 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4";
             assert nb0_of_moving_fields <= 0 : "Error 3 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 0";
             assert nb0_of_empty_fields == total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields : "Error 4 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields";
@@ -224,7 +214,6 @@ public class Engine implements Environment {
                     }
                 }
             }
-//            assert nb1_of_stable_bricks == nb1_of_stable_fields : "Error 5 in Engine.RemoveCompletedLines; nb0_of_stable_bricks != nb0_of_stable_fields";
             assert nb1_of_moving_fields <= 4 : "Error 6 in Engine.RemoveCompletedLines; nb0_of_moving_fields > 4";
             assert nb1_of_empty_fields == total_nb_of_fields - nb1_of_stable_fields - nb1_of_moving_fields : "Error 7 in Engine.RemoveCompletedLines; nb0_of_empty_fields != total_nb_of_fields - nb0_of_stable_fields - nb0_of_moving_fields";
             assert nb0_of_empty_fields + nb_of_cleared_stable_bricks == nb1_of_empty_fields : "Error 8 in Engine.RemoveCompletedLines; nb0_of_empty_fields + nb_of_cleared_stable_bricks != nb1_of_empty_fields";
@@ -326,10 +315,6 @@ public class Engine implements Environment {
         for (var newPosition : newPositions) {
             gameFieldArr[newPosition.getY()][newPosition.getX()] = GAME_FIELD_BRICK_FALLING;
         }
-//        if (debuggingMode){
-//            System.out.println("moving :" + action);
-//            printGameFieldArr();
-//        }
     }
 
     /**
@@ -419,8 +404,6 @@ public class Engine implements Environment {
 
     private boolean isFieldAllowedToMove(Position[] positions) {
         for (var position : positions) {
-            var x = position.getX();
-            var y = position.getY();
             if (!isFieldAllowedToMove(position)) {
                 return false;
             }
@@ -445,16 +428,14 @@ public class Engine implements Environment {
             case SHAPE_I:
                 movesDownNeeded = 2;
                 break;
-            case SHAPE_O:
-            case SHAPE_L:
-            case SHAPE_J:
-                movesDownNeeded = 0;
-                break;
             case SHAPE_T:
             case SHAPE_S:
             case SHAPE_Z:
                 movesDownNeeded = 1;
                 break;
+            case SHAPE_O:
+            case SHAPE_L:
+            case SHAPE_J:
             default:
                 movesDownNeeded = 0;
         }
@@ -589,7 +570,7 @@ public class Engine implements Environment {
     private double normalizeNumberOfLines(int linesNumber) {
         // max possible number of lines cleared in one move is 4
         // normalize to range <0;1>
-        return ((double)linesNumber) / 4;
+        return ((double) linesNumber) / 4;
     }
 
     private int getNumberOfHoles() {
@@ -609,12 +590,12 @@ public class Engine implements Environment {
         return holesNb;
     }
 
-    private double normalizeNumberOfHoles(int holesNumber){
+    private double normalizeNumberOfHoles(int holesNumber) {
         // max possible number of holes almost equals the surface of the game field,
         // but in practice it wont be nearly as big. 20 is guessed average max
         // holes number in game field.
         // normalize to range <0; ~1?>
-        return ((double)holesNumber) / 20;
+        return ((double) holesNumber) / 20;
     }
 
     private int getColumnsSummedHeight() {
@@ -633,7 +614,7 @@ public class Engine implements Environment {
     private double normalizeColumnsSummedHeight(int columnsHeight) {
         // max possible number of summed columns is equal to game field plane.
         // normalize to range <0;1>
-        return ((double)columnsHeight) / (GAME_FIELD_SIZE_Y * GAME_FIELD_SIZE_X);
+        return ((double) columnsHeight) / (GAME_FIELD_SIZE_Y * GAME_FIELD_SIZE_X);
     }
 
     private int getColumnsSummedHeightDifference() {
@@ -663,7 +644,7 @@ public class Engine implements Environment {
         // max possible number of summed columns difference is almost equal to game field plane,
         // but should appear rarely, so we take half of that.
         // normalize to range <0;~1>
-        return ((double)columnsHeightDiff) / (((double)GAME_FIELD_SIZE_Y * (double)GAME_FIELD_SIZE_X)/2);
+        return ((double) columnsHeightDiff) / (((double) GAME_FIELD_SIZE_Y * (double) GAME_FIELD_SIZE_X) / 2);
     }
 
     private int getMaxColumnHeight() {
@@ -684,7 +665,7 @@ public class Engine implements Environment {
 
     private double normalizeMaxColumnHeight(int columnHeight) {
         // normalize to range <0;1>
-        return ((double)columnHeight) / GAME_FIELD_SIZE_Y;
+        return ((double) columnHeight) / GAME_FIELD_SIZE_Y;
     }
 
     private int getPointsOfTouch() {
@@ -713,7 +694,7 @@ public class Engine implements Environment {
     private double normalizePointsOfTouch(int pointsNumber) {
         // max possible points of touch is 9
         // normalize to range <0;1>
-        return ((double)pointsNumber) / 9;
+        return ((double) pointsNumber) / 9;
     }
 
     public void printGameFieldArr() {
