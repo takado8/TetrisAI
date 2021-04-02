@@ -1,9 +1,11 @@
 package tetris.ai;
 
+import tetris.ai.neural.SimpleNeuralNet;
+
 import java.util.Arrays;
 
 import static tetris.ai.Constants.*;
-import static tetris.ai.RandomGenerator.randomGenerator;
+import static tetris.ai.evolution.RandomGenerator.randomGenerator;
 
 /**
  * Unit that interacts with the environment and is subjected to evolution process.
@@ -11,6 +13,7 @@ import static tetris.ai.RandomGenerator.randomGenerator;
 public class Agent {
     private final double[] chromosome;
     private double fitness = 0.0;
+    private final SimpleNeuralNet neuralNet;
 
     /**
      * Creates Agent with random chromosome gene values in range <0;1>
@@ -18,8 +21,9 @@ public class Agent {
     public Agent() {
         chromosome = new double[NUMBER_OF_GENES];
         for (int i = 0; i < NUMBER_OF_GENES; i++) {
-            chromosome[i] = randomGenerator.nextDouble(-0.99,1);
+            chromosome[i] = randomGenerator.nextDouble(-0.99, 1);
         }
+        neuralNet = new SimpleNeuralNet(NEURAL_NETWORK_SHAPE, chromosome);
     }
 
     /**
@@ -29,23 +33,22 @@ public class Agent {
      */
     public Agent(double[] chromosome) {
         this.chromosome = chromosome;
+        neuralNet = new SimpleNeuralNet(NEURAL_NETWORK_SHAPE, chromosome);
     }
 
     /**
      * Multiplies each input by the corresponding chromosome value and sums the results.
+     *
      * @param inputs array of values of the game field features
      * @return move evaluation
      */
     public double evaluateMove(double[] inputs) {
-        double moveEvaluation = 0.0;
-        for (int i = 0; i < inputs.length; i++) {
-            moveEvaluation += inputs[i] * chromosome[i];
-        }
-        return moveEvaluation;
+        double[] evaluation = neuralNet.feedNet(inputs);
+        return evaluation[0];
     }
 
     /**
-     *  Mutates random gene value by random value, in range of +/- MUTATION_VALUE
+     * Mutates random gene value by random value, in range of +/- MUTATION_VALUE
      */
     public void mutate() {
         int mutationIndex = randomGenerator.nextInt(chromosome.length);

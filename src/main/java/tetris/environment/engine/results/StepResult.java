@@ -1,4 +1,4 @@
-package tetris.environment.engine;
+package tetris.environment.engine.results;
 
 import tetris.environment.engine.tetrimino.Brick;
 import tetris.environment.engine.tetrimino.Tetrimino;

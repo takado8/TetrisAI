@@ -26,6 +26,14 @@ public class TetriminoBuilder {
         // get shape for new tetrimino
         Shape shape = shapeGenerator.getShape();
         // build and return tetrimino
+        return buildTetrimino(shape);
+    }
+
+    public Tetrimino buildNewTetrimino(Shape shape) {
+        return buildTetrimino(shape);
+    }
+
+    private Tetrimino buildTetrimino(Shape shape) {
         switch (shape) {
             case SHAPE_I:
                 return buildTetriminoShapeI();

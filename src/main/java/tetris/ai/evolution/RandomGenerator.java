@@ -1,4 +1,4 @@
-package tetris.ai;
+package tetris.ai.evolution;
 
 import java.util.List;
 import java.util.Random;
@@ -9,9 +9,8 @@ public class RandomGenerator extends Random {
     private RandomGenerator() {
     }
 
-
     /**
-     * Returns random double in range min inclusive; max exclusive)
+     * Returns random double in range: min inclusive; max exclusive
      */
     public double nextDouble(double min, double max) {
         return min + nextDouble() * (max - min);

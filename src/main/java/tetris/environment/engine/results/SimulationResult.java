@@ -1,4 +1,4 @@
-package tetris.environment.engine;
+package tetris.environment.engine.results;
 
 public class SimulationResult {
     private final int movesRight;
@@ -15,11 +15,6 @@ public class SimulationResult {
 
     public int getRotations() {
         return rotations;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return this == o;
     }
 
     @Override

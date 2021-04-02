@@ -1,14 +1,15 @@
-package tetris.ai;
+package tetris.ai.evolution;
 
+import tetris.ai.Agent;
 import tetris.environment.Environment;
 import tetris.environment.engine.Action;
-import tetris.environment.engine.StepResult;
+import tetris.environment.engine.results.StepResult;
 
 import java.util.*;
 
 import static tetris.ai.Constants.CROSSING_OVER_BIAS;
 import static tetris.ai.Constants.NUMBER_OF_GENES;
-import static tetris.ai.RandomGenerator.randomGenerator;
+import static tetris.ai.evolution.RandomGenerator.randomGenerator;
 
 public class Evolution {
     private final Environment engine;
@@ -33,13 +34,13 @@ public class Evolution {
         // for number of generations
         for (int g = 0; g < numberOfGenerations; g++) {
             // track generation performance
-            double generationScores = 0;
+            double generationScore = 0;
             double generationBestScore = -1;
             // each agent in population plays n games
             for (Agent agent : population) {
                 double agentScore = testAgent(agent, maxGames, maxTurns);
-                generationScores += agentScore;
-                agentScore /= maxGames;
+                generationScore += agentScore;
+//                agentScore /= maxGames;
                 agent.setFitness(agentScore);
                 // count high score etc
                 if (agentScore > generationBestScore) {
@@ -54,7 +55,7 @@ public class Evolution {
             }
             // next generation
             // print some info about last generation performance
-            System.out.println("Generation " + g + " avg score: " + generationScores / (populationSize * maxGames)
+            System.out.println("Generation " + g + " avg score: " + generationScore / (populationSize * maxGames)
                     + " generation best: " + generationBestScore + " total best score: " + bestScore);
             if (g % 10 == 0) {
                 System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()));
@@ -78,7 +79,7 @@ public class Evolution {
             int turnsPlayed = 0;
             while (!isFinalStep && turnsPlayed < maxTurns) {
                 // set new tetrimino in desired location
-                engine.simulate(agent);
+                engine.runFullSimulation(agent);
                 // move tetrimino down until it drops
                 boolean tetriminoDropped = false;
                 while (!tetriminoDropped) {
@@ -98,7 +99,7 @@ public class Evolution {
         return agentScore;
     }
 
-    public double[] testAgent(Agent agent, int maxGames) {
+    public static double[] testAgent(Agent agent, Environment engine, int maxGames) {
         double[] scoreArray = new double[maxGames];
         for (int n = 0; n < maxGames; n++) {
             // set environment to initial state
@@ -109,11 +110,11 @@ public class Evolution {
             double turns = 0;
             while (!isFinalStep) {
                 turns++;
-                if (turns % 1000 == 0) {
+                if (turns % 10000 == 0) {
                     System.out.println("Turns: " + turns);
                 }
                 // set new tetrimino in desired location
-                engine.simulate(agent);
+                engine.runFullSimulation(agent);
                 // move tetrimino down until it drops
                 boolean tetriminoDropped = false;
                 while (!tetriminoDropped) {
@@ -218,7 +219,7 @@ public class Evolution {
             Agent agent1 = population.get(agent1Index);
             Agent agent2 = population.get(agent2Index);
 
-            // compare and agent to the pool
+            // compare and add agent to the pool
             if (compareOperator.compare(agent1.getFitness(), agent2.getFitness())) {
                 selectedPool.add(agent1);
             } else {
@@ -255,21 +256,5 @@ public class Evolution {
             offspring.mutate();
         }
         return offspring;
-    }
-
-    public double getPopulationSize() {
-        return populationSize;
-    }
-
-    public double getReproductionRate() {
-        return reproductionRate;
-    }
-
-    public double getMutationRate() {
-        return mutationRate;
-    }
-
-    public List<Agent> getPopulation() {
-        return population;
     }
 }

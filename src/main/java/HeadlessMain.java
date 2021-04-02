@@ -1,17 +1,26 @@
-//import tetris.ai.Agent;
-import tetris.ai.Evolution;
+import tetris.ai.Agent;
+import tetris.ai.evolution.Evolution;
 import tetris.environment.Environment;
 import tetris.environment.engine.Engine;
+
+import static tetris.environment.display.Constants.AGENT_CHROMOSOME;
+
 
 public class HeadlessMain {
 
     public static void main(String[] args) {
-        Environment gameEnvironment = new Engine(false);
+        Environment gameEnvironment = new Engine();
 
         Evolution evolution = new Evolution(gameEnvironment,
-                200, 0.5, 0.2);
+                200, 0.6, 0.05);
 
-        var evolvedAgent = evolution.evolve(120, 3, 100);
-        evolution.testAgent(evolvedAgent, 30);
+        var evolvedAgent = evolution.evolve(120, 3, 200);
+        Evolution.testAgent(evolvedAgent, gameEnvironment, 3);
+
+//        var scores = Evolution.testAgent(new Agent(AGENT_CHROMOSOME), gameEnvironment, 3);
+//        for (int i = 0; i < scores.length; i++) {
+//            double score = scores[i];
+//            System.out.println("Game " + i + " score: " + score);
+//        }
     }
 }

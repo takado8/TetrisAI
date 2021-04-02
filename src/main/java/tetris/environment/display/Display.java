@@ -19,6 +19,7 @@ import tetris.ai.Agent;
 import tetris.environment.Environment;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
+import tetris.environment.engine.results.StepResult;
 import tetris.environment.engine.tetrimino.Brick;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class Display extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // init game engine
-        engine = new Engine(true);
+        engine = new Engine();
         // init Display
         // make root
         root = new Group();
@@ -92,7 +93,7 @@ public class Display extends Application {
                     if (stepResult.isTetriminoDropped()) {
                         // tetrimino dropped, so we need to simulate newly resp tetrimino
                         if (aiSimulation) {
-                            engine.simulate(aiAgent);
+                            engine.runFullSimulation(aiAgent);
                         }
                         resetGameSpeed();
                         updateScoreLabel(stepResult);
@@ -242,7 +243,7 @@ public class Display extends Application {
         scoreLabel.setText("Score: " + gameScore);
         // if AI simulation mode is active, run simulation for first tetrimino
         if (aiSimulation) {
-            engine.simulate(aiAgent);
+            engine.runFullSimulation(aiAgent);
         }
         updateDisplay(stepResult);
     }
