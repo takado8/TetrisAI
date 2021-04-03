@@ -9,7 +9,6 @@ public class SimpleNeuralNet {
     public SimpleNeuralNet(int[] shape, double[] weights) {
         this.shape = shape;
         this.weights = weights;
-
     }
 
     public double[] feedNet(double[] inputs) {
@@ -33,6 +32,7 @@ public class SimpleNeuralNet {
             for (double input : inputs) {
                 outputs[i] += input * weights[weightsIndex++];
             }
+            outputs[i] = Math.tanh(outputs[i]);
         }
         return outputs;
     }

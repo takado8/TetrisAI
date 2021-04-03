@@ -1,4 +1,4 @@
-package tetris.environment.display;
+package tetris.environment.display.models;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;

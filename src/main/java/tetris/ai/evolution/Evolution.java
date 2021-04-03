@@ -13,14 +13,16 @@ import static tetris.ai.evolution.RandomGenerator.randomGenerator;
 
 public class Evolution {
     private final Environment engine;
-    private final double populationSize;
+    private final double targetPopulationSize;
+    private final double initPopulationSize;
     private final double reproductionRate;
     private final double mutationRate;
     private final List<Agent> population = new ArrayList<>();
 
-    public Evolution(Environment gameEnvironment, int populationSize, double reproductionRate, double mutationRate) {
+    public Evolution(Environment gameEnvironment, int initPopulationSize, int targetPopulationSize, double reproductionRate, double mutationRate) {
         this.engine = gameEnvironment;
-        this.populationSize = populationSize;
+        this.targetPopulationSize = targetPopulationSize;
+        this.initPopulationSize = initPopulationSize;
         this.reproductionRate = reproductionRate;
         this.mutationRate = mutationRate;
         generateRandomPopulation();
@@ -55,7 +57,7 @@ public class Evolution {
             }
             // next generation
             // print some info about last generation performance
-            System.out.println("Generation " + g + " avg score: " + generationScore / (populationSize * maxGames)
+            System.out.println("Generation " + g + " avg score: " + generationScore / (targetPopulationSize * maxGames)
                     + " generation best: " + generationBestScore + " total best score: " + bestScore);
             if (g % 10 == 0) {
                 System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()));
@@ -70,6 +72,7 @@ public class Evolution {
 
     private double testAgent(Agent agent, int maxGames, int maxTurns) {
         double agentScore = 0;
+        boolean lost = false;
         for (int n = 0; n < maxGames; n++) {
             // set environment to initial state
             engine.reset();
@@ -90,6 +93,10 @@ public class Evolution {
                 // tetrimino dropped, check if game is over
                 isFinalStep = stepResult.isFinalStep();
                 turnsPlayed++;
+            }
+            if (turnsPlayed < maxTurns) {
+                agentScore = 0;
+                break;
             }
             // game is over, save agent results
             if (stepResult != null) {
@@ -133,7 +140,7 @@ public class Evolution {
     }
 
     private void generateRandomPopulation() {
-        while (population.size() < populationSize) {
+        while (population.size() < initPopulationSize) {
             population.add(new Agent());
         }
     }
@@ -143,7 +150,7 @@ public class Evolution {
      * Called every time after population evaluation by interacting with the environment.
      */
     public void nextGeneration() {
-        int poolSize = (int) (populationSize * reproductionRate);
+        int poolSize = (int) (targetPopulationSize * reproductionRate);
         // select agents to reproduce
         CompareOperator takeWinner = (a, b) -> a > b;
         List<Agent> reproductionPool = selectPoolByTournament(poolSize, takeWinner);
@@ -151,13 +158,17 @@ public class Evolution {
         List<Agent> offspring = reproduce(reproductionPool, poolSize);
         // select dead pool
         CompareOperator takeLooser = (a, b) -> a < b;
+        int overpopulation = population.size() - (int) targetPopulationSize;
+        if (overpopulation > 0) {
+            int deadPoolSize = (int) ((double) poolSize * 1.5);
+            poolSize = deadPoolSize > overpopulation ? overpopulation : deadPoolSize;
+        }
         List<Agent> deadPool = selectPoolByTournament(poolSize, takeLooser);
         // remove deadPool from population
         removeDeadPool(deadPool);
         // merge offspring with population
         population.addAll(offspring);
-        // end of cycle
-        assert population.size() == populationSize;
+        System.out.println("population size: " + population.size());
     }
 
     /**
@@ -175,7 +186,8 @@ public class Evolution {
             while (parent1 == parent2) {
                 parent2 = randomGenerator.select(reproductionPool);
             }
-            Agent child = crossingOver(parent1, parent2);
+            Agent child = randomGenerator.nextDouble() > 0.5 ? crossingOverChromosomes(parent1, parent2)
+                    : crossingOver(parent1, parent2);
             offspring.add(child);
         }
         return offspring;
@@ -248,6 +260,31 @@ public class Evolution {
             // add little bias to avoid multiplying by zero.
             newChromosome[i] = parent1Chromosome[i] * (parent1.getFitness() + CROSSING_OVER_BIAS) +
                     parent2Chromosome[i] * (parent2.getFitness() + CROSSING_OVER_BIAS);
+        }
+        Agent offspring = new Agent(newChromosome);
+        offspring.normalizeChromosome();
+
+        if (mutationRate > randomGenerator.nextDouble()) {
+            offspring.mutate();
+        }
+        return offspring;
+    }
+
+    private Agent crossingOverChromosomes(Agent parent1, Agent parent2) {
+        var parent1Chromosome = parent1.getChromosome();
+        var parent2Chromosome = parent2.getChromosome();
+
+        var newChromosome = new double[NUMBER_OF_GENES];
+
+        int i = 0;
+        while (i < newChromosome.length) {
+            int range = (int) ((double) newChromosome.length * randomGenerator.nextDouble(0.15, 0.4));
+            var currentDonor = randomGenerator.nextDouble() > 0.5 ? parent1Chromosome : parent2Chromosome;
+            while (range > 0 && i < newChromosome.length) {
+                newChromosome[i] = currentDonor[i];
+                i++;
+                range--;
+            }
         }
         Agent offspring = new Agent(newChromosome);
         offspring.normalizeChromosome();

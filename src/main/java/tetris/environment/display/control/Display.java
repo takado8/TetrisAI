@@ -1,4 +1,4 @@
-package tetris.environment.display;
+package tetris.environment.display.control;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -17,6 +17,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import tetris.ai.Agent;
 import tetris.environment.Environment;
+import tetris.environment.display.models.BrickDisplay;
 import tetris.environment.engine.*;
 import javafx.animation.AnimationTimer;
 import tetris.environment.engine.results.StepResult;
@@ -30,7 +31,7 @@ import static tetris.environment.display.Constants.*;
 
 public class Display extends Application {
     // game engine
-    private Environment engine;
+    private Environment gameEngine;
     // display objects
     private Group root;
     private Label scoreLabel;
@@ -64,7 +65,7 @@ public class Display extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // init game engine
-        engine = new Engine();
+        gameEngine = new Engine();
         // init Display
         // make root
         root = new Group();
@@ -84,8 +85,8 @@ public class Display extends Application {
                 initTimers(now);
                 if (isTimeToEndTurn(now)) {
                     // end turn, get result
-                    engine.step(actionSelected);
-                    StepResult stepResult = engine.step(Action.END_TURN);
+                    gameEngine.step(actionSelected);
+                    StepResult stepResult = gameEngine.step(Action.END_TURN);
                     if (stepResult.isFinalStep()) {
                         handleFinalStep();
                         return;
@@ -93,7 +94,7 @@ public class Display extends Application {
                     if (stepResult.isTetriminoDropped()) {
                         // tetrimino dropped, so we need to simulate newly resp tetrimino
                         if (aiSimulation) {
-                            engine.runFullSimulation(aiAgent);
+                            gameEngine.runFullSimulation(aiAgent);
                         }
                         resetGameSpeed();
                         updateScoreLabel(stepResult);
@@ -103,7 +104,7 @@ public class Display extends Application {
                     lastTurnUpdate = now;
                 }
                 if (isTimeToRespond(now)) {
-                    StepResult stepResult = engine.step(actionSelected);
+                    StepResult stepResult = gameEngine.step(actionSelected);
                     stopRotationAction();
                     updateDisplay(stepResult);
                     lastResponseUpdate = now;
@@ -237,13 +238,13 @@ public class Display extends Application {
         // clear action
         actionSelected = Action.NONE;
         // set initial state of game environment and get first observation
-        StepResult stepResult = engine.reset();
+        StepResult stepResult = gameEngine.reset();
         // reset game score
         gameScore = stepResult.getGameScore();
         scoreLabel.setText("Score: " + gameScore);
         // if AI simulation mode is active, run simulation for first tetrimino
         if (aiSimulation) {
-            engine.runFullSimulation(aiAgent);
+            gameEngine.runFullSimulation(aiAgent);
         }
         updateDisplay(stepResult);
     }
@@ -252,9 +253,7 @@ public class Display extends Application {
      * Starts the game.
      */
     private void startButtonClicked(ActionEvent e) {
-        // reset
         reset();
-        // start game
         startGame();
     }
 

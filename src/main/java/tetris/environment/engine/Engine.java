@@ -386,7 +386,7 @@ public class Engine implements Environment {
                 Position[] bricksStartingPositions = fallingTetrimino.getPositions();
                 moveMaxDown();
                 // deep eval
-                double deepFieldEvaluation = simulateDeep(aiAgent);
+                double deepFieldEvaluation = simulateNextStep(aiAgent);
                 if (deepFieldEvaluation > bestEval) {
                     bestEval = deepFieldEvaluation;
                     bestMovesRight = movesRight;
@@ -413,7 +413,7 @@ public class Engine implements Environment {
         return new SimulationResult(bestMovesRight, bestRotations);
     }
 
-    private double simulateDeep(Agent aiAgent) {
+    private double simulateNextStep(Agent aiAgent) {
         Tetrimino savedFallingTetrimino = new Tetrimino(fallingTetrimino);
         putDownTetrimino();
         // add new falling tetrimino and save it
@@ -464,7 +464,6 @@ public class Engine implements Environment {
         }
     }
 
-
     private void bringToPositions(Brick[] bricks, Position[] bricksNewPositions) {
         for (int i = 0; i < bricks.length; i++) {
             Brick brick = bricks[i];
@@ -508,11 +507,10 @@ public class Engine implements Environment {
 
     private double[] getFieldFeaturesArray() {
         double[] fieldFeaturesValues = new double[NUMBER_OF_GAME_FIELD_EVALUATION_FEATURES];
-        fieldFeaturesValues[0] = getNumberOfCompleteLines();
-        fieldFeaturesValues[1] = getNumberOfHoles();
-        fieldFeaturesValues[2] = getColumnsSummedHeight();
-        fieldFeaturesValues[3] = getColumnsSummedHeightDifference();
-//        fieldFeaturesValues[4] = getPointsOfTouch();
+        fieldFeaturesValues[0] = normalizeNumberOfLines(getNumberOfCompleteLines());
+        fieldFeaturesValues[1] = normalizeNumberOfHoles(getNumberOfHoles());
+        fieldFeaturesValues[2] = normalizeColumnsSummedHeight(getColumnsSummedHeight());
+        fieldFeaturesValues[3] = normalizeColumnsSummedHeightDiff(getColumnsSummedHeightDifference());
         return fieldFeaturesValues;
     }
 
@@ -520,30 +518,6 @@ public class Engine implements Environment {
         while (canMove(Action.MOVE_LEFT)) {
             move(Action.MOVE_LEFT);
         }
-    }
-
-    private double getBestValueFromEvaluationMap(Map<Double, SimulationResult> evaluationMap) {
-        double maxValue = -Double.MAX_VALUE;
-        for (var mapEntry : evaluationMap.entrySet()) {
-            double moveEvaluation = mapEntry.getKey();
-            if (moveEvaluation > maxValue) {
-                maxValue = moveEvaluation;
-            }
-        }
-        return maxValue;
-    }
-
-    private SimulationResult getBestResultFromEvaluationMap(Map<Double, SimulationResult> evaluationMap) {
-        double maxValue = -Double.MAX_VALUE;
-        SimulationResult bestResult = null;//new SimulationResult(0,0);  // we want to crash if sth goes wrong and evaluationMap should never be empty
-        for (var mapEntry : evaluationMap.entrySet()) {
-            double moveEvaluation = mapEntry.getKey();
-            if (moveEvaluation > maxValue) {
-                maxValue = moveEvaluation;
-                bestResult = mapEntry.getValue();
-            }
-        }
-        return bestResult;
     }
 
     public void setTetriminoInSimulationResultPosition(SimulationResult simulationResult) {
@@ -668,56 +642,6 @@ public class Engine implements Environment {
         // but should appear rarely, so we take half of that.
         // normalize to range <0;~1>
         return ((double) columnsHeightDiff) / (((double) GAME_FIELD_SIZE_Y * (double) GAME_FIELD_SIZE_X) / 2);
-    }
-
-    private int getMaxColumnHeight() {
-        int maxColumnHeight = 0;
-        for (int x = 0; x < GAME_FIELD_SIZE_X; x++) {
-            for (int y = 0; y < GAME_FIELD_SIZE_Y; y++) {
-                if (gameFieldArr[y][x] != GAME_FIELD_EMPTY) {
-                    int columnHeight = GAME_FIELD_SIZE_Y - y;
-                    if (columnHeight > maxColumnHeight) {
-                        maxColumnHeight = columnHeight;
-                    }
-                    break;
-                }
-            }
-        }
-        return maxColumnHeight;
-    }
-
-    private double normalizeMaxColumnHeight(int columnHeight) {
-        // normalize to range <0;1>
-        return ((double) columnHeight) / GAME_FIELD_SIZE_Y;
-    }
-
-    private int getPointsOfTouch() {
-        int pointsOfTouch = 0;
-        for (var brick : fallingTetrimino.getBricks()) {
-            Position brickPosition = brick.getPosition();
-            var x = brickPosition.getX();
-            var y = brickPosition.getY();
-            Position[] positionsToCheck = {
-                    new Position(x - 1, y),
-                    new Position(x + 1, y),
-                    new Position(x, y - 1),
-                    new Position(x, y + 1)};
-            for (var position : positionsToCheck) {
-                x = position.getX();
-                y = position.getY();
-                if (x >= GAME_FIELD_SIZE_X || x < 0 || y >= GAME_FIELD_SIZE_Y || y < 0
-                        || gameFieldArr[y][x] == GAME_FIELD_BRICK_STABLE) {
-                    pointsOfTouch++;
-                }
-            }
-        }
-        return pointsOfTouch;
-    }
-
-    private double normalizePointsOfTouch(int pointsNumber) {
-        // max possible points of touch is 9
-        // normalize to range <0;1>
-        return ((double) pointsNumber) / 9;
     }
 
     public void printGameFieldArr() {
