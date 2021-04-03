@@ -29,7 +29,7 @@ javafx {
 
 group 'com.kodilla'
 version '1.0-SNAPSHOT'
-mainClassName = 'tetris.environment.display.control.Display'
+mainClassName = 'tetris.environment.display.Control'
 
 repositories {
     mavenCentral()

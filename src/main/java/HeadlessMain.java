@@ -1,7 +1,7 @@
 import tetris.ai.Agent;
 import tetris.ai.evolution.Evolution;
 import tetris.environment.Environment;
-import tetris.environment.engine.Engine;
+import tetris.environment.engine.TetrisEngine;
 
 import static tetris.environment.display.Constants.AGENT_CHROMOSOME;
 
@@ -10,7 +10,7 @@ public class HeadlessMain {
 
     public static void main(String[] args) {
         System.out.println("Crossing over genes test");
-        Environment gameEnvironment = new Engine();
+        Environment gameEnvironment = new TetrisEngine();
 
 //        Evolution evolution = new Evolution(gameEnvironment, 420,
 //                120, 0.6, 0.07);

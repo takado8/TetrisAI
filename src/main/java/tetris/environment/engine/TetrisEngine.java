@@ -18,7 +18,7 @@ import static tetris.environment.engine.Constants.*;
  * Responsible for game logic - maintaining game field,
  * moving Tetrimino etc.
  */
-public class Engine implements Environment {
+public class TetrisEngine implements Environment {
     private final int[][] gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
     private final TetriminoBuilder tetriminoBuilder = new TetriminoBuilder();
     private final Map<Position, Brick> stableBricksMap = new HashMap<>();
@@ -26,7 +26,7 @@ public class Engine implements Environment {
     private Tetrimino fallingTetrimino;
     private int gameScore = 0;
 
-    public Engine() {
+    public TetrisEngine() {
         System.out.println("\nInitializing game engine.");
         fillGameFieldWithValuesEmpty();
     }

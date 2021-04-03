@@ -1,25 +1,25 @@
-package tetris.environment.display.control;
+package tetris.environment.display;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
-import javafx.stage.Stage;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.stage.Stage;
 import tetris.ai.Agent;
 import tetris.environment.Environment;
-import tetris.environment.display.models.BrickDisplay;
-import tetris.environment.engine.*;
-import javafx.animation.AnimationTimer;
+import tetris.environment.display.views.*;
+import tetris.environment.engine.Action;
+import tetris.environment.engine.TetrisEngine;
 import tetris.environment.engine.results.StepResult;
 import tetris.environment.engine.tetrimino.Brick;
 
@@ -29,14 +29,14 @@ import java.util.List;
 import static tetris.environment.display.Constants.*;
 
 
-public class Display extends Application {
+public class Control extends Application {
     // game engine
     private Environment gameEngine;
     // display objects
     private Group root;
     private Label scoreLabel;
     private double gameScore = 0.0;
-    private final List<BrickDisplay> brickDisplayList = new ArrayList<>();
+    private final List<BrickView> brickViewList = new ArrayList<>();
     // asynchronous loop to run the game
     private Action actionSelected = Action.NONE;
     private AnimationTimer gameLoop;
@@ -48,7 +48,7 @@ public class Display extends Application {
     private boolean aiSimulation = true;
     private final Agent aiAgent = new Agent(AGENT_CHROMOSOME);
 
-    public Display() {
+    public Control() {
         if (aiSimulation) {
             timeDelayNormal = DELAY_SECONDS_AI;
         } else {
@@ -64,15 +64,11 @@ public class Display extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // init game engine
-        gameEngine = new Engine();
-        // init Display
-        // make root
+        gameEngine = new TetrisEngine();
         root = new Group();
-        // setup scene
-        Scene scene = setupScene();
+        Scene scene = setupScene(root);
+        setupControls(root);
         primaryStage.setScene(scene);
-        // run
         primaryStage.show();
         // set main window parameters (after show() to access actual window size)
         setWindowParameters(primaryStage);
@@ -153,51 +149,79 @@ public class Display extends Application {
     private void updateDisplay(StepResult stepResult) {
         // update position in all elements
         // for now just erase old and replace with new ones.
-        for (BrickDisplay brick : brickDisplayList) {
+        for (BrickView brick : brickViewList) {
             root.getChildren().remove(brick);
         }
 
-        brickDisplayList.clear();
+        brickViewList.clear();
         for (Brick brick : stepResult.getBricks()) {
-            BrickDisplay brickDisplay = new BrickDisplay(brick);
-            brickDisplayList.add(brickDisplay);
-            root.getChildren().add(brickDisplay);
+            BrickView brickView = new BrickView(brick);
+            brickViewList.add(brickView);
+            root.getChildren().add(brickView);
         }
     }
 
-    Rectangle makeGameField() {
-        Rectangle gameField = new Rectangle(GAME_FIELD_DISPLAY_MARGIN, GAME_FIELD_DISPLAY_MARGIN,
-                GAME_FIELD_DISPLAY_SIZE_X, GAME_FIELD_DISPLAY_SIZE_Y);
-        gameField.setFill(Color.web(GAME_FIELD_BACKGROUND_COLOR_HEX));
-        gameField.setArcWidth(5);
-        gameField.setArcHeight(5);
-        gameField.setStrokeWidth(1);
-        gameField.setStroke(Color.web(GAME_FIELD_STROKE_COLOR_HEX));
-        return gameField;
+    private SceneView setupScene(Group root){
+        SceneView sceneView = new SceneView(root);
+        addKeyboardListeners(sceneView);
+        return sceneView;
     }
 
-    private Label makeScoreLabel() {
-        Label scoreLabel = new Label(SCORE_LABEL_TXT);
-        scoreLabel.setLayoutX(GAME_FIELD_DISPLAY_SIZE_X + 2 * GAME_FIELD_DISPLAY_MARGIN);
-        scoreLabel.setLayoutY(GAME_FIELD_DISPLAY_MARGIN);
-        scoreLabel.setTextFill(Color.WHITESMOKE);
-        scoreLabel.setFont(Font.font("Trebuchet MS", FontWeight.NORMAL, FontPosture.REGULAR, 20));
-        return scoreLabel;
-    }
-
-    public Scene setupScene() {
-        Scene scene = new Scene(root, SCENE_SIZE_X, SCENE_SIZE_Y, Color.web(SCENE_BACKGROUND_COLOR_HEX));
+    public void setupControls(Group root) {
         var rootChildren = root.getChildren();
         // setup game field
-        rootChildren.add(makeGameField());
+        rootChildren.add(new GameFieldView());
         // setup right menu
-        scoreLabel = makeScoreLabel();
+        scoreLabel = new LabelView(SCORE_LABEL_TXT, SCORE_LABEL_LAYOUT_X, SCORE_LABEL_LAYOUT_Y);
         rootChildren.add(scoreLabel);
-        rootChildren.add(makeStartButton());
-        // keyboard listener
+        rootChildren.add(new LabelView(MODE_LABEL_TXT, MODE_LABEL_LAYOUT_X, MODE_LABEL_LAYOUT_Y));
+
+        ToggleGroup modeGroup = new ToggleGroup();
+        RadioButtonView aiModeButton = new RadioButtonView(modeGroup, MODE_AI_RADIO_BUTTON_TXT,
+                MODE_AI_RADIO_BUTTON_LAYOUT_X, MODE_AI_RADIO_BUTTON_LAYOUT_Y, true);
+        RadioButtonView humanModeButton = new RadioButtonView(modeGroup, MODE_HUMAN_RADIO_BUTTON_TXT,
+                MODE_HUMAN_RADIO_BUTTON_LAYOUT_X, MODE_HUMAN_RADIO_BUTTON_LAYOUT_Y, false);
+        RadioButtonView humanVsAiModeButton = new RadioButtonView(modeGroup,
+                MODE_HUMAN_AI_RADIO_BUTTON_TXT, MODE_HUMAN_AI_RADIO_BUTTON_LAYOUT_X,
+                MODE_HUMAN_AI_RADIO_BUTTON_LAYOUT_Y, false);
+        rootChildren.add(aiModeButton);
+        rootChildren.add(humanModeButton);
+        rootChildren.add(humanVsAiModeButton);
+        modeGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
+        {
+            public void changed(ObservableValue<? extends Toggle> ob, Toggle o, Toggle n)
+            {
+                RadioButtonView radioButton = (RadioButtonView)modeGroup.getSelectedToggle();
+                if (radioButton != null) {
+                    if (radioButton == aiModeButton){
+                        aiModeSelected();
+                    }
+                    else if (radioButton == humanModeButton){
+                        humanModeSelected();
+                    } else if (radioButton == humanVsAiModeButton){
+                        humanAiModeSelected();
+                    }
+                }
+            }
+        });
+
+        rootChildren.add(new StartButtonView(this::startButtonClicked));
+    }
+
+    private void addKeyboardListeners(SceneView scene){
         scene.addEventFilter(KeyEvent.KEY_PRESSED, this::keyboardListener);
         scene.addEventFilter(KeyEvent.KEY_RELEASED, this::keyboardListenerRelease);
-        return scene;
+    }
+
+    private void aiModeSelected () {
+        System.out.println("ai mode!");
+    }
+    private void humanModeSelected () {
+        System.out.println("human mode!");
+    }
+
+    private void humanAiModeSelected () {
+        System.out.println("human-ai mode!");
     }
 
     private void keyboardListenerRelease(Event e) {
@@ -227,11 +251,11 @@ public class Display extends Application {
 
     private void reset() {
         // clear root
-        for (BrickDisplay brick : brickDisplayList) {
+        for (BrickView brick : brickViewList) {
             root.getChildren().remove(brick);
         }
         // clear brick list
-        brickDisplayList.clear();
+        brickViewList.clear();
         // reset timers
         lastTurnUpdate = 0L;
         lastResponseUpdate = 0L;
@@ -255,16 +279,6 @@ public class Display extends Application {
     private void startButtonClicked(ActionEvent e) {
         reset();
         startGame();
-    }
-
-    private Button makeStartButton() {
-        Button startButton = new Button("Start");
-        startButton.setLayoutX(SCENE_SIZE_X - 150);
-        startButton.setLayoutY(SCENE_SIZE_Y / 2);
-        startButton.setDefaultButton(false);
-        startButton.setFocusTraversable(false);
-        startButton.setOnAction(this::startButtonClicked);
-        return startButton;
     }
 
     private void setWindowParameters(Stage primaryStage) {

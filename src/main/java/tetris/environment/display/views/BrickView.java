@@ -1,4 +1,4 @@
-package tetris.environment.display.models;
+package tetris.environment.display.views;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -10,9 +10,9 @@ import static tetris.environment.display.Constants.*;
 /**
  * Makes displayable Rectangle from {@code Brick}
  */
-public class BrickDisplay extends Rectangle {
+public class BrickView extends Rectangle {
 
-    public BrickDisplay(Brick brick) {
+    public BrickView(Brick brick) {
         super(translatePositionX(brick), translatePositionY(brick),
                 BRICK_DISPLAY_SIZE_ADJUSTED, BRICK_DISPLAY_SIZE_ADJUSTED);
         setFill(Color.web(brick.getColor().getHexString()));
