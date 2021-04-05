@@ -1,5 +1,8 @@
 package tetris.ai.neural;
 
+/**
+ * Short and simple neural network implementation using loops.
+ */
 public class SimpleNeuralNet {
     private final int[] shape;
     private final double[] weights;

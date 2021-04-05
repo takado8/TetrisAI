@@ -134,11 +134,11 @@ public class TetriminoBuilder {
         int spawnX = getSpawnPositionX();
         int i;
         for (i = 0; i < 2; i++) {
-            Position position = new Position(spawnX + 1 + i, 0);
+            Position position = new Position(spawnX + i, 1);
             bricks[i] = new Brick(position, color);
         }
         for (; i < 4; i++) {
-            Position position = new Position(spawnX + i, 1);
+            Position position = new Position(spawnX + i -1, 0);
             bricks[i] = new Brick(position, color);
         }
         return new Tetrimino(SHAPE_S, color, bricks, 2);

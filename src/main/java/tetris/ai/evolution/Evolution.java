@@ -118,7 +118,7 @@ public class Evolution {
             while (!isFinalStep) {
                 turns++;
                 if (turns % 10000 == 0) {
-                    System.out.println("Turns: " + turns);
+                    System.out.println("Turns:" + (turns + 1) + " Score: " + scoreArray[n]);
                 }
                 // set new tetrimino in desired location
                 engine.runFullSimulation(agent);
@@ -157,13 +157,18 @@ public class Evolution {
         // reproduce
         List<Agent> offspring = reproduce(reproductionPool, poolSize);
         // select dead pool
-        CompareOperator takeLooser = (a, b) -> a < b;
         int overpopulation = population.size() - (int) targetPopulationSize;
+        int deadPoolSize;
         if (overpopulation > 0) {
-            int deadPoolSize = (int) ((double) poolSize * 1.5);
-            poolSize = deadPoolSize > overpopulation ? overpopulation : deadPoolSize;
+            System.out.println("overpopulation: " + overpopulation);
+            deadPoolSize = (int) ((double) poolSize * 1.7);
+            deadPoolSize = Math.min(deadPoolSize, overpopulation);
         }
-        List<Agent> deadPool = selectPoolByTournament(poolSize, takeLooser);
+        else {
+            deadPoolSize = poolSize;
+        }
+        CompareOperator takeLooser = (a, b) -> a < b;
+        List<Agent> deadPool = selectPoolByTournament(deadPoolSize, takeLooser);
         // remove deadPool from population
         removeDeadPool(deadPool);
         // merge offspring with population
@@ -187,7 +192,7 @@ public class Evolution {
                 parent2 = randomGenerator.select(reproductionPool);
             }
             Agent child = randomGenerator.nextDouble() > 0.5 ? crossingOverChromosomes(parent1, parent2)
-                    : crossingOver(parent1, parent2);
+                    : crossingOverGenes(parent1, parent2);
             offspring.add(child);
         }
         return offspring;
@@ -250,7 +255,7 @@ public class Evolution {
      * @param parent2 Agent
      * @return new Agent with chromosome derived from parents.
      */
-    private Agent crossingOver(Agent parent1, Agent parent2) {
+    private Agent crossingOverGenes(Agent parent1, Agent parent2) {
         var parent1Chromosome = parent1.getChromosome();
         var parent2Chromosome = parent2.getChromosome();
 

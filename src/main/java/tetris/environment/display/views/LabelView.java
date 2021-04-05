@@ -14,6 +14,7 @@ public class LabelView extends Label {
         setLayoutY(layoutY);
         setTextFill(Color.WHITESMOKE);
         setFont(Font.font("Trebuchet MS", FontWeight.NORMAL, FontPosture.REGULAR, 20));
+        setStyle("-fx-font-family: Verdana");
     }
 }
 

@@ -19,5 +19,6 @@ public class RadioButtonView extends RadioButton {
         setFont(Font.font("Trebuchet MS", FontWeight.NORMAL, FontPosture.REGULAR, 12));
         setTextFill(Color.WHITESMOKE);
         setSelected(isSelected);
+        setFocusTraversable(false);
     }
 }

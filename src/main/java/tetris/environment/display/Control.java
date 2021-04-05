@@ -9,7 +9,6 @@ import javafx.event.Event;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
@@ -45,11 +44,11 @@ public class Control extends Application {
     private double timeDelayNormal;
     private double timeDelay;
     // ai
-    private boolean aiSimulation = true;
+    private boolean aiMode = true;
     private final Agent aiAgent = new Agent(AGENT_CHROMOSOME);
 
     public Control() {
-        if (aiSimulation) {
+        if (aiMode) {
             timeDelayNormal = DELAY_SECONDS_AI;
         } else {
             timeDelayNormal = DELAY_SECONDS_NORMAL;
@@ -89,11 +88,11 @@ public class Control extends Application {
                     }
                     if (stepResult.isTetriminoDropped()) {
                         // tetrimino dropped, so we need to simulate newly resp tetrimino
-                        if (aiSimulation) {
+                        if (aiMode) {
                             gameEngine.runFullSimulation(aiAgent);
                         }
                         resetGameSpeed();
-                        updateScoreLabel(stepResult);
+                        updateScoreLabelIfNeeded(stepResult);
                     }
                     updateDisplay(stepResult);
                     stopRotationAction();
@@ -116,10 +115,14 @@ public class Control extends Application {
         }
     }
 
-    private void updateScoreLabel(StepResult stepResult) {
+    private void updateScoreLabel(){
+        scoreLabel.setText(SCORE_LABEL_TXT + (int) gameScore);
+    }
+
+    private void updateScoreLabelIfNeeded(StepResult stepResult) {
         if (stepResult.getGameScore() != gameScore) {
             gameScore = stepResult.getGameScore();
-            scoreLabel.setText("Score: " + (int) gameScore);
+            updateScoreLabel();
         }
     }
 
@@ -131,7 +134,7 @@ public class Control extends Application {
 
     private void handleFinalStep() {
         gameLoop.stop();
-        scoreLabel.setText(generateGameOverString());
+        updateScoreLabel();
     }
 
     private String generateGameOverString() {
@@ -172,7 +175,7 @@ public class Control extends Application {
         // setup game field
         rootChildren.add(new GameFieldView());
         // setup right menu
-        scoreLabel = new LabelView(SCORE_LABEL_TXT, SCORE_LABEL_LAYOUT_X, SCORE_LABEL_LAYOUT_Y);
+        scoreLabel = new LabelView(SCORE_LABEL_TXT + "0", SCORE_LABEL_LAYOUT_X, SCORE_LABEL_LAYOUT_Y);
         rootChildren.add(scoreLabel);
         rootChildren.add(new LabelView(MODE_LABEL_TXT, MODE_LABEL_LAYOUT_X, MODE_LABEL_LAYOUT_Y));
 
@@ -181,12 +184,9 @@ public class Control extends Application {
                 MODE_AI_RADIO_BUTTON_LAYOUT_X, MODE_AI_RADIO_BUTTON_LAYOUT_Y, true);
         RadioButtonView humanModeButton = new RadioButtonView(modeGroup, MODE_HUMAN_RADIO_BUTTON_TXT,
                 MODE_HUMAN_RADIO_BUTTON_LAYOUT_X, MODE_HUMAN_RADIO_BUTTON_LAYOUT_Y, false);
-        RadioButtonView humanVsAiModeButton = new RadioButtonView(modeGroup,
-                MODE_HUMAN_AI_RADIO_BUTTON_TXT, MODE_HUMAN_AI_RADIO_BUTTON_LAYOUT_X,
-                MODE_HUMAN_AI_RADIO_BUTTON_LAYOUT_Y, false);
+
         rootChildren.add(aiModeButton);
         rootChildren.add(humanModeButton);
-        rootChildren.add(humanVsAiModeButton);
         modeGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
         {
             public void changed(ObservableValue<? extends Toggle> ob, Toggle o, Toggle n)
@@ -198,13 +198,10 @@ public class Control extends Application {
                     }
                     else if (radioButton == humanModeButton){
                         humanModeSelected();
-                    } else if (radioButton == humanVsAiModeButton){
-                        humanAiModeSelected();
                     }
                 }
             }
         });
-
         rootChildren.add(new StartButtonView(this::startButtonClicked));
     }
 
@@ -215,9 +212,15 @@ public class Control extends Application {
 
     private void aiModeSelected () {
         System.out.println("ai mode!");
+        timeDelayNormal = DELAY_SECONDS_AI;
+        timeDelay = timeDelayNormal;
+        aiMode = true;
     }
     private void humanModeSelected () {
         System.out.println("human mode!");
+        timeDelayNormal = DELAY_SECONDS_NORMAL;
+        timeDelay = timeDelayNormal;
+        aiMode = false;
     }
 
     private void humanAiModeSelected () {
@@ -265,9 +268,9 @@ public class Control extends Application {
         StepResult stepResult = gameEngine.reset();
         // reset game score
         gameScore = stepResult.getGameScore();
-        scoreLabel.setText("Score: " + gameScore);
+        updateScoreLabel();
         // if AI simulation mode is active, run simulation for first tetrimino
-        if (aiSimulation) {
+        if (aiMode) {
             gameEngine.runFullSimulation(aiAgent);
         }
         updateDisplay(stepResult);
