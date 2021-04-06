@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 
 import static tetris.environment.display.Constants.*;
 
-public class StartButtonView extends Button {
+public class StartButtonDisplay extends Button {
     private static final String IDLE_BUTTON_STYLE = "-fx-background-color:\n" +
             "            #090a0c,\n" +
             "            linear-gradient(#38424b 0%, #1f2429 20%, #191d22 100%),\n" +
@@ -24,7 +24,7 @@ public class StartButtonView extends Button {
     private static final String HOVERED_BUTTON_STYLE = IDLE_BUTTON_STYLE + "-fx-opacity: 0.75";
     private static final String CLICKED_BUTTON_STYLE = IDLE_BUTTON_STYLE + "-fx-opacity: 0.5";
 
-    public StartButtonView(EventHandler<ActionEvent> eventHandler) {
+    public StartButtonDisplay(EventHandler<ActionEvent> eventHandler) {
         super(BUTTON_START_TXT);
         setLayoutX(BUTTON_START_LAYOUT_X);
         setLayoutY(BUTTON_START_LAYOUT_Y);

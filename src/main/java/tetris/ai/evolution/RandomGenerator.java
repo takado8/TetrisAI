@@ -9,6 +9,10 @@ public class RandomGenerator extends Random {
     private RandomGenerator() {
     }
 
+    public boolean percentChance(double chance){
+        return nextDouble() < chance;
+    }
+
     /**
      * Returns random double in range: min inclusive; max exclusive
      */

@@ -10,9 +10,9 @@ import static tetris.environment.display.Constants.*;
 /**
  * Makes displayable Rectangle from {@code Brick}
  */
-public class BrickView extends Rectangle {
+public class BrickDisplay extends Rectangle {
 
-    public BrickView(Brick brick) {
+    public BrickDisplay(Brick brick) {
         super(translatePositionX(brick), translatePositionY(brick),
                 BRICK_DISPLAY_SIZE_ADJUSTED, BRICK_DISPLAY_SIZE_ADJUSTED);
         setFill(Color.web(brick.getColor().getHexString()));

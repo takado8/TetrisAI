@@ -2,15 +2,11 @@ package tetris.environment.display;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
@@ -28,14 +24,14 @@ import java.util.List;
 import static tetris.environment.display.Constants.*;
 
 
-public class Control extends Application {
+public class Control extends Application implements ModeSelectionView {
     // game engine
     private Environment gameEngine;
     // display objects
     private Group root;
     private Label scoreLabel;
     private double gameScore = 0.0;
-    private final List<BrickView> brickViewList = new ArrayList<>();
+    private final List<BrickDisplay> brickDisplayList = new ArrayList<>();
     // asynchronous loop to run the game
     private Action actionSelected = Action.NONE;
     private AnimationTimer gameLoop;
@@ -69,7 +65,7 @@ public class Control extends Application {
         setupControls(root);
         primaryStage.setScene(scene);
         primaryStage.show();
-        // set main window parameters (after show() to access actual window size)
+        // set main window parameters after show() to access actual window size
         setWindowParameters(primaryStage);
     }
 
@@ -79,7 +75,6 @@ public class Control extends Application {
             public void handle(long now) {
                 initTimers(now);
                 if (isTimeToEndTurn(now)) {
-                    // end turn, get result
                     gameEngine.step(actionSelected);
                     StepResult stepResult = gameEngine.step(Action.END_TURN);
                     if (stepResult.isFinalStep()) {
@@ -87,12 +82,12 @@ public class Control extends Application {
                         return;
                     }
                     if (stepResult.isTetriminoDropped()) {
-                        // tetrimino dropped, so we need to simulate newly resp tetrimino
                         if (aiMode) {
                             gameEngine.runFullSimulation(aiAgent);
                         }
                         resetGameSpeed();
-                        updateScoreLabelIfNeeded(stepResult);
+                        updateScore(stepResult);
+                        updateScoreLabel();
                     }
                     updateDisplay(stepResult);
                     stopRotationAction();
@@ -119,10 +114,9 @@ public class Control extends Application {
         scoreLabel.setText(SCORE_LABEL_TXT + (int) gameScore);
     }
 
-    private void updateScoreLabelIfNeeded(StepResult stepResult) {
+    private void updateScore(StepResult stepResult) {
         if (stepResult.getGameScore() != gameScore) {
             gameScore = stepResult.getGameScore();
-            updateScoreLabel();
         }
     }
 
@@ -137,10 +131,6 @@ public class Control extends Application {
         updateScoreLabel();
     }
 
-    private String generateGameOverString() {
-        return "Score: " + gameScore;
-    }
-
     private boolean isTimeToEndTurn(long now) {
         return now - lastTurnUpdate >= timeDelay * NANOSECONDS_IN_SECOND;
     }
@@ -152,82 +142,53 @@ public class Control extends Application {
     private void updateDisplay(StepResult stepResult) {
         // update position in all elements
         // for now just erase old and replace with new ones.
-        for (BrickView brick : brickViewList) {
+        for (BrickDisplay brick : brickDisplayList) {
             root.getChildren().remove(brick);
         }
 
-        brickViewList.clear();
+        brickDisplayList.clear();
         for (Brick brick : stepResult.getBricks()) {
-            BrickView brickView = new BrickView(brick);
-            brickViewList.add(brickView);
-            root.getChildren().add(brickView);
+            BrickDisplay brickDisplay = new BrickDisplay(brick);
+            brickDisplayList.add(brickDisplay);
+            root.getChildren().add(brickDisplay);
         }
     }
 
-    private SceneView setupScene(Group root){
-        SceneView sceneView = new SceneView(root);
-        addKeyboardListeners(sceneView);
-        return sceneView;
+    private SceneDisplay setupScene(Group root){
+        SceneDisplay sceneDisplay = new SceneDisplay(root);
+        addKeyboardListeners(sceneDisplay);
+        return sceneDisplay;
     }
 
     public void setupControls(Group root) {
         var rootChildren = root.getChildren();
         // setup game field
-        rootChildren.add(new GameFieldView());
+        rootChildren.add(new GameFieldDisplay());
         // setup right menu
-        scoreLabel = new LabelView(SCORE_LABEL_TXT + "0", SCORE_LABEL_LAYOUT_X, SCORE_LABEL_LAYOUT_Y);
+        scoreLabel = new LabelDisplay(SCORE_LABEL_TXT + "0", SCORE_LABEL_LAYOUT_X, SCORE_LABEL_LAYOUT_Y);
         rootChildren.add(scoreLabel);
-        rootChildren.add(new LabelView(MODE_LABEL_TXT, MODE_LABEL_LAYOUT_X, MODE_LABEL_LAYOUT_Y));
-
-        ToggleGroup modeGroup = new ToggleGroup();
-        RadioButtonView aiModeButton = new RadioButtonView(modeGroup, MODE_AI_RADIO_BUTTON_TXT,
-                MODE_AI_RADIO_BUTTON_LAYOUT_X, MODE_AI_RADIO_BUTTON_LAYOUT_Y, true);
-        RadioButtonView humanModeButton = new RadioButtonView(modeGroup, MODE_HUMAN_RADIO_BUTTON_TXT,
-                MODE_HUMAN_RADIO_BUTTON_LAYOUT_X, MODE_HUMAN_RADIO_BUTTON_LAYOUT_Y, false);
-
-        rootChildren.add(aiModeButton);
-        rootChildren.add(humanModeButton);
-        modeGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
-        {
-            public void changed(ObservableValue<? extends Toggle> ob, Toggle o, Toggle n)
-            {
-                RadioButtonView radioButton = (RadioButtonView)modeGroup.getSelectedToggle();
-                if (radioButton != null) {
-                    if (radioButton == aiModeButton){
-                        aiModeSelected();
-                    }
-                    else if (radioButton == humanModeButton){
-                        humanModeSelected();
-                    }
-                }
-            }
-        });
-        rootChildren.add(new StartButtonView(this::startButtonClicked));
+        rootChildren.add(new LabelDisplay(MODE_LABEL_TXT, MODE_LABEL_LAYOUT_X, MODE_LABEL_LAYOUT_Y));
+        setupModeRadioButtons(rootChildren);
+        rootChildren.add(new StartButtonDisplay(this::startButtonClicked));
     }
 
-    private void addKeyboardListeners(SceneView scene){
+    private void addKeyboardListeners(SceneDisplay scene){
         scene.addEventFilter(KeyEvent.KEY_PRESSED, this::keyboardListener);
         scene.addEventFilter(KeyEvent.KEY_RELEASED, this::keyboardListenerRelease);
     }
 
-    private void aiModeSelected () {
-        System.out.println("ai mode!");
+    public void aiModeSelected () {
         timeDelayNormal = DELAY_SECONDS_AI;
         timeDelay = timeDelayNormal;
         aiMode = true;
     }
-    private void humanModeSelected () {
-        System.out.println("human mode!");
+    public void humanModeSelected () {
         timeDelayNormal = DELAY_SECONDS_NORMAL;
         timeDelay = timeDelayNormal;
         aiMode = false;
     }
 
-    private void humanAiModeSelected () {
-        System.out.println("human-ai mode!");
-    }
-
-    private void keyboardListenerRelease(Event e) {
+    public void keyboardListenerRelease(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.DOWN) {
             timeDelay = timeDelayNormal;
@@ -237,7 +198,7 @@ public class Control extends Application {
         }
     }
 
-    private void keyboardListener(Event e) {
+    public void keyboardListener(Event e) {
         KeyCode keyCode = ((KeyEvent) e).getCode();
         if (keyCode == KeyCode.LEFT) {
             actionSelected = Action.MOVE_LEFT;
@@ -254,11 +215,11 @@ public class Control extends Application {
 
     private void reset() {
         // clear root
-        for (BrickView brick : brickViewList) {
+        for (BrickDisplay brick : brickDisplayList) {
             root.getChildren().remove(brick);
         }
         // clear brick list
-        brickViewList.clear();
+        brickDisplayList.clear();
         // reset timers
         lastTurnUpdate = 0L;
         lastResponseUpdate = 0L;
@@ -267,7 +228,7 @@ public class Control extends Application {
         // set initial state of game environment and get first observation
         StepResult stepResult = gameEngine.reset();
         // reset game score
-        gameScore = stepResult.getGameScore();
+        updateScore(stepResult);
         updateScoreLabel();
         // if AI simulation mode is active, run simulation for first tetrimino
         if (aiMode) {
