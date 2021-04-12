@@ -15,8 +15,7 @@ import java.util.*;
 import static tetris.environment.engine.Constants.*;
 
 /**
- * Responsible for game logic - maintaining game field,
- * moving Tetrimino etc.
+ * Responsible for game logic.
  */
 public class TetrisEngine implements Environment {
     private final int[][] gameFieldArr = new int[GAME_FIELD_SIZE_Y][GAME_FIELD_SIZE_X];
@@ -24,18 +23,17 @@ public class TetrisEngine implements Environment {
     private final Map<Position, Brick> stableBricksMap = new HashMap<>();
 
     private Tetrimino fallingTetrimino;
-    private int gameScore = 0;
+    private double gameScore = 0;
 
     public TetrisEngine() {
         System.out.println("\nInitializing game engine.");
         fillGameFieldWithValuesEmpty();
     }
 
-
     /**
      * Executes action from user/operator.
      * Takes next step in environment.
-     * Allowed indefinitely during turn, user decides when to end turn by choosing action NEXT_TURN
+     *
      * @param action action to execute
      * @return StepResult
      */
@@ -68,6 +66,7 @@ public class TetrisEngine implements Environment {
      */
     public StepResult reset() {
         gameScore = 0;
+        Tetrimino.resetIdCounter();
         fillGameFieldWithValuesEmpty();
         addNewFallingTetriminoToGameField();
         stableBricksMap.clear();
@@ -75,8 +74,23 @@ public class TetrisEngine implements Environment {
     }
 
     public void runFullSimulation(Agent agent) {
-        var best = simulate(agent);
-        setTetriminoInSimulationResultPosition(best);
+        SimulationResult bestResult = simulate(agent);
+        setTetriminoInSimulationResultPosition(bestResult);
+    }
+
+    /**
+     * Original Tetrimino NES scoring system.
+     * @param completedLines number of lines completed in one turn.
+     * @return score
+     */
+    private double calculateScore(int completedLines) {
+        switch (completedLines) {
+            case 1: return 40;
+            case 2: return 100;
+            case 3: return 300;
+            case 4: return 1200;
+            default: return 0;
+        }
     }
 
     /**
@@ -107,9 +121,7 @@ public class TetrisEngine implements Environment {
                     lineStableBricks++;
                 }
             }
-            // check if line is complete
             if (lineStableBricks == GAME_FIELD_SIZE_X) {
-                // line is complete
                 clearedLines++;
                 // clear bricks from stableBrickDict
                 for (int x = 0; x < gameFieldArr[y].length; x++) {
@@ -184,20 +196,16 @@ public class TetrisEngine implements Environment {
 
     private void addNewFallingTetriminoToGameField() {
         fallingTetrimino = tetriminoBuilder.buildNewTetrimino();
-        // add tetrimino bricks to the game field array
-        for (var brick : fallingTetrimino.getBricks()) {
-            var position = brick.getPosition();
-            // dont overwrite stable values
-            if (gameFieldArr[position.getY()][position.getX()] != GAME_FIELD_BRICK_STABLE) {
-                gameFieldArr[position.getY()][position.getX()] = GAME_FIELD_BRICK_FALLING;
-            }
-        }
+        addTetriminoBricksToGameFieldArr(fallingTetrimino.getBricks());
     }
 
     private void addNewFallingTetriminoToGameField(Tetrimino newFallingTetrimino) {
         fallingTetrimino = newFallingTetrimino;
-        // add tetrimino bricks to the game field array
-        for (var brick : fallingTetrimino.getBricks()) {
+        addTetriminoBricksToGameFieldArr(fallingTetrimino.getBricks());
+    }
+
+    private void addTetriminoBricksToGameFieldArr(Brick[] bricks) {
+        for (var brick : bricks) {
             var position = brick.getPosition();
             // dont overwrite stable values
             if (gameFieldArr[position.getY()][position.getX()] != GAME_FIELD_BRICK_STABLE) {
@@ -218,9 +226,6 @@ public class TetrisEngine implements Environment {
         fallingTetrimino = oldTetrimino;
     }
 
-    /**
-     * Moves down {@code fallingTetrimino}
-     */
     private void move(Action action) {
         int addToX;
         int addToY;
@@ -241,7 +246,7 @@ public class TetrisEngine implements Environment {
                 return;
         }
         Brick[] bricks = fallingTetrimino.getBricks();
-        Position[] newPositions = new Position[4];
+        Position[] newPositions = new Position[bricks.length];
         // get new positions and erase old bricks
         for (int i = 0; i < bricks.length; i++) {
             Brick brick = bricks[i];
@@ -318,11 +323,10 @@ public class TetrisEngine implements Environment {
         Brick[] bricks = fallingTetrimino.getBricks();
         Position centerOfRotation = bricks[1].getPosition();
 
-        Position[] newPositions = new Position[4];
+        Position[] newPositions = new Position[bricks.length];
         for (int i = 0; i < bricks.length; i++) {
             newPositions[i] = bricks[i].getPosition().rotate(centerOfRotation);
         }
-        // check if fields are allowed
         if (isFieldAllowedToMove(newPositions)) {
             for (int i = 0; i < bricks.length; i++) {
                 Brick brick = bricks[i];
@@ -360,23 +364,14 @@ public class TetrisEngine implements Environment {
 
     /**
      * For AI purpose. simulates and evaluates by the AI every possible move,
-     * maps them and chooses best one, than sets falling tetrimino in correct position
-     * to end up in wanted state by falling down until end of the turn.
-     */
+     **/
     private SimulationResult simulate(Agent aiAgent) {
-        // init map to store every move evaluation (Double) as key and SimulationResult as value,
-        // that contains moves needed to achieve particular state.
-        double bestEval = -Double.MAX_VALUE;
+        double bestEvaluation = -Double.MAX_VALUE;
         int bestMovesRight = 0;
         int bestRotations = 0;
-        // tetrimino is in its spawn position
         moveTetriminoDownSoItCouldRotate();
-        // count how many rotations occurred
         int rotations = 0;
-        // loop and evaluate every possible state for every orientation
         for (int k = 0; k < fallingTetrimino.getPossibleOrientationsNb(); k++) {
-            // tetrimino starts and ends simulation in position x = 0, we need to remember how many moves
-            // right leeds to which state. same as with the orientation.
             int movesRight = 0;
             moveMaxLeft();
             boolean canMoveRight = true;
@@ -385,16 +380,14 @@ public class TetrisEngine implements Environment {
                 Brick[] bricks = fallingTetrimino.getBricks();
                 Position[] bricksStartingPositions = fallingTetrimino.getPositions();
                 moveMaxDown();
-                // deep eval
-                double deepFieldEvaluation = simulateNextStep(aiAgent);
-                if (deepFieldEvaluation > bestEval) {
-                    bestEval = deepFieldEvaluation;
+                // simulate next step
+                double nextStepEvaluation = simulateNextStep(aiAgent);
+                if (nextStepEvaluation > bestEvaluation) {
+                    bestEvaluation = nextStepEvaluation;
                     bestMovesRight = movesRight;
                     bestRotations = rotations;
                 }
-
                 bringToPositions(bricks, bricksStartingPositions);
-
                 // move one right
                 if (canMove(Action.MOVE_RIGHT)) {
                     move(Action.MOVE_RIGHT);
@@ -406,9 +399,8 @@ public class TetrisEngine implements Environment {
             rotateSimulatedTetrimino();
             rotations++;
         }
-        // move it max to the left to bring it to state 0 from which we can get to
-        // best state according to evaluationMap key values, by following actions from
-        // SimulationResult in map values.
+        // move max to the left to bring it to state 0 from which we can get to
+        // best state by executing actions from SimulationResult.
         moveMaxLeft();
         return new SimulationResult(bestMovesRight, bestRotations);
     }
@@ -431,14 +423,11 @@ public class TetrisEngine implements Environment {
                 Brick[] bricks = fallingTetrimino.getBricks();
                 Position[] bricksStartingPositions = fallingTetrimino.getPositions();
                 moveMaxDown();
-
                 double fieldEvaluation = aiAgent.evaluateMove(getFieldFeaturesArray());
-
                 if (fieldEvaluation > bestEval) {
                     bestEval = fieldEvaluation;
                 }
                 bringToPositions(bricks, bricksStartingPositions);
-
                 if (canMove(Action.MOVE_RIGHT)) {
                     move(Action.MOVE_RIGHT);
                 } else {
@@ -448,9 +437,7 @@ public class TetrisEngine implements Environment {
             rotateSimulatedTetrimino();
         }
         reverseAddNewFallingTetriminoToGameField(fallingTetrimino, savedFallingTetrimino);
-
         reversePutDownTetrimino(savedFallingTetrimino);
-
         return bestEval;
     }
 
@@ -505,26 +492,24 @@ public class TetrisEngine implements Environment {
         }
     }
 
-    private double[] getFieldFeaturesArray() {
-        double[] fieldFeaturesValues = new double[NUMBER_OF_GAME_FIELD_EVALUATION_FEATURES];
-        fieldFeaturesValues[0] = normalizeNumberOfLines(getNumberOfCompleteLines());
-        fieldFeaturesValues[1] = normalizeNumberOfHoles(getNumberOfHoles());
-        fieldFeaturesValues[2] = normalizeColumnsSummedHeight(getColumnsSummedHeight());
-        fieldFeaturesValues[3] = normalizeColumnsSummedHeightDiff(getColumnsSummedHeightDifference());
-        return fieldFeaturesValues;
-    }
-
     private void moveMaxLeft() {
         while (canMove(Action.MOVE_LEFT)) {
             move(Action.MOVE_LEFT);
         }
     }
 
+    private double[] getFieldFeaturesArray() {
+        double[] fieldFeaturesValues = new double[NUMBER_OF_GAME_FIELD_EVALUATION_FEATURES];
+        fieldFeaturesValues[0] = getNumberOfCompleteLines();
+        fieldFeaturesValues[1] = getNumberOfHoles();
+        fieldFeaturesValues[2] = getColumnsSummedHeight();
+        fieldFeaturesValues[3] = getColumnsSummedHeightDifference();
+        return fieldFeaturesValues;
+    }
+
     public void setTetriminoInSimulationResultPosition(SimulationResult simulationResult) {
-        // set tetrimino in wanted position
         // not every tetrimino can rotate near wall, so we move it two times right,
-        // than rotate it and move it back to the left. This solution could be better, works for now.
-        // so two fields to the right
+        // than rotate it and move it back to the left.
         for (int i = 0; i < 2; i++) {
             if (canMove(Action.MOVE_RIGHT)) {
                 move(Action.MOVE_RIGHT);
@@ -544,8 +529,6 @@ public class TetrisEngine implements Environment {
                 move(Action.MOVE_RIGHT);
             }
         }
-        // end of simulation. Tetrimino now is in position which AI predicts as best,
-        // can now fall down until next tetrimino spawns and simulation runs again.
     }
 
     private int getNumberOfCompleteLines() {

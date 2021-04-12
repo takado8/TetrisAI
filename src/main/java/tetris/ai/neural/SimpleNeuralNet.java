@@ -1,5 +1,7 @@
 package tetris.ai.neural;
 
+import java.util.Arrays;
+
 /**
  * Short and simple neural network implementation using loops.
  */
@@ -35,8 +37,15 @@ public class SimpleNeuralNet {
             for (double input : inputs) {
                 outputs[i] += input * weights[weightsIndex++];
             }
-            outputs[i] = Math.tanh(outputs[i]);
+//            outputs[i] = Math.tanh(outputs[i]);
         }
         return outputs;
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleNeuralNet{" +
+                "shape=" + Arrays.toString(shape) +
+                '}';
     }
 }

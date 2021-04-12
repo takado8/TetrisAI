@@ -26,127 +26,24 @@ public class Evolution {
         this.reproductionRate = reproductionRate;
         this.mutationRate = mutationRate;
         generateRandomPopulation();
-    }
-
-    public Agent evolve(int numberOfGenerations, int maxGames, int maxTurns) {
-        double bestScore = -1;
-        Agent bestAgent = new Agent();
-        Agent bestGenerationAgent = new Agent();
-
-        for (int g = 0; g < numberOfGenerations; g++) {
-            double generationScore = 0;
-            double generationBestScore = -1;
-            for (Agent agent : population) {
-                double agentScore = testAgent(agent, maxGames, maxTurns);
-                generationScore += agentScore;
-                agent.setFitness(agentScore);
-                if (agentScore > generationBestScore) {
-                    generationBestScore = agentScore;
-                    bestGenerationAgent = agent;
-                    if (agentScore >= bestScore) {
-                        bestScore = agentScore;
-                        bestAgent = agent;
-                    }
-                }
-            }
-            System.out.println("Generation " + g + " avg score: " + generationScore / (targetPopulationSize * maxGames)
-                    + " generation best: " + generationBestScore + " total best score: " + bestScore);
-            if (g % 10 == 0) {
-                System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()));
-                System.out.println("Best score generation chromosome: " + Arrays.toString(bestGenerationAgent.getChromosome()));
-            }
-            nextGeneration();
-        }
-        System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()));
-        System.out.println("Best score generation chromosome: " + Arrays.toString(bestGenerationAgent.getChromosome()));
-        return bestAgent;
-    }
-
-    private double testAgent(Agent agent, int maxGames, int maxTurns) {
-        double agentScore = 0;
-        for (int n = 0; n < maxGames; n++) {
-            engine.reset();
-            StepResult stepResult = null;
-            boolean isFinalStep = false;
-            int turnsPlayed = 0;
-            while (!isFinalStep && turnsPlayed < maxTurns) {
-                engine.runFullSimulation(agent);
-                boolean tetriminoDropped = false;
-                while (!tetriminoDropped) {
-                    stepResult = engine.step(Action.END_TURN);
-                    tetriminoDropped = stepResult.isTetriminoDropped();
-                }
-                isFinalStep = stepResult.isFinalStep();
-                turnsPlayed++;
-            }
-            if (turnsPlayed < maxTurns) {
-                agentScore = 0;
-                break;
-            }
-            if (stepResult != null) {
-                agentScore += stepResult.getGameScore();
-            }
-        }
-        return agentScore;
-    }
-
-    public static double[] testAgent(Agent agent, Environment engine, int maxGames) {
-        double[] scoreArray = new double[maxGames];
-        for (int n = 0; n < maxGames; n++) {
-            // set environment to initial state
-            engine.reset();
-            StepResult stepResult = null;
-            // while game is not over
-            boolean isFinalStep = false;
-            double turns = 0;
-            while (!isFinalStep) {
-                turns++;
-                // set new tetrimino in desired location
-                engine.runFullSimulation(agent);
-                // move tetrimino down until it drops
-                boolean tetriminoDropped = false;
-                while (!tetriminoDropped) {
-                    // save results
-                    stepResult = engine.step(Action.END_TURN);
-                    tetriminoDropped = stepResult.isTetriminoDropped();
-                }
-                // tetrimino dropped, check if game is over
-                isFinalStep = stepResult.isFinalStep();
-                if (turns % 10000 == 0) {
-                    System.out.println("Turns:" + turns + " Score: " + stepResult.getGameScore());
-                }
-            }
-            // game is over, save agent results
-            scoreArray[n] = stepResult.getGameScore();
-            System.out.println("End of game " + (n + 1) + ". Turns taken: " + turns);
-        }
-        return scoreArray;
-    }
-
-    private void generateRandomPopulation() {
-        while (population.size() < initPopulationSize) {
-            population.add(new Agent());
-        }
+        System.out.println(this);
     }
 
     /**
      * Main training function. Goes through every step of evolution process.
      * Called every time after population evaluation by interacting with the environment.
      */
-    public void nextGeneration() {
+    private void nextGeneration() {
+        // select reproduction pool
         int poolSize = (int) (targetPopulationSize * reproductionRate);
         List<Agent> reproductionPool = selectReproductionPool(poolSize);
+        // reproduce
         List<Agent> offspring = reproduce(reproductionPool, poolSize);
         // select dead pool
         int overpopulation = population.size() + offspring.size() - (int) targetPopulationSize;
-        int deadPoolSize;
-        if (overpopulation > 0) {
-            System.out.println("overpopulation: " + overpopulation);
-            deadPoolSize = (int) ((double) poolSize * 1.7);
-            deadPoolSize = Math.min(deadPoolSize, overpopulation);
-        } else {
-            deadPoolSize = poolSize;
-        }
+        System.out.println("overpopulation: " + overpopulation);
+        int deadPoolSize = (int) ((double) poolSize * 4);
+        deadPoolSize = Math.min(deadPoolSize, overpopulation);
         List<Agent> deadPool = selectDeadPool(deadPoolSize);
         // remove deadPool from population
         removeDeadPool(deadPool);
@@ -203,9 +100,7 @@ public class Evolution {
     }
 
     /**
-     * Selects from {@code population} pool of agents. Randomly, but biased towards
-     * better fitted agents. The tournament selection randomly picks two agents and
-     * adds agent with better fitness to the returned pool.
+     * Selects from {@code population} pool of agents.
      *
      * @param poolSize        desired size of selected pool
      * @param compareOperator lambda expression to compare agents fitness.
@@ -237,7 +132,7 @@ public class Evolution {
     /**
      * Creates new Agent from two parent Agents. Combines their chromosomes, by
      * summing both parents corresponding chromosome values multiplied by the parents fitness and normalizing it to
-     * range <0;1>. Small bias is introduced to avoid multiplication by zero.
+     * range <0;1>. Bias is introduced to avoid multiplication by zero.
      *
      * @param parent1 Agent
      * @param parent2 Agent
@@ -260,7 +155,7 @@ public class Evolution {
 
     /**
      * Creates new Agent from two parent Agents. Combines their chromosomes, by
-     * copying and merging random parts of their chromosome into child's chromosome
+     * copying and merging random parts of their chromosomes into the child's chromosome
      */
     private Agent crossingOverChromosomes(Agent parent1, Agent parent2) {
         var parent1Chromosome = parent1.getChromosome();
@@ -282,5 +177,118 @@ public class Evolution {
         offspring.normalizeChromosome();
 
         return offspring;
+    }
+
+    private void generateRandomPopulation() {
+        while (population.size() < initPopulationSize) {
+            population.add(new Agent());
+        }
+    }
+
+    private double testAgent(Agent agent, int maxGames, int maxTurns) {
+        double agentScore = 0;
+        for (int n = 0; n < maxGames; n++) {
+            engine.reset();
+            StepResult stepResult = null;
+            boolean isFinalStep = false;
+            int turnsPlayed = 0;
+            while (!isFinalStep && turnsPlayed < maxTurns) {
+                engine.runFullSimulation(agent);
+                boolean tetriminoDropped = false;
+                while (!tetriminoDropped) {
+                    stepResult = engine.step(Action.END_TURN);
+                    tetriminoDropped = stepResult.isTetriminoDropped();
+                }
+                isFinalStep = stepResult.isFinalStep();
+                turnsPlayed++;
+            }
+            if (turnsPlayed < maxTurns) {
+                agentScore = 0;
+                break;
+            }
+            if (stepResult != null) {
+                agentScore += stepResult.getGameScore();
+            }
+        }
+        return agentScore;
+    }
+
+    public Agent evolve(int numberOfGenerations, int maxGames, int maxTurns) {
+        System.out.println("Starting evolution. Generations: " + numberOfGenerations
+                + " maxGames: " + maxGames + " maxTurns: " + maxTurns);
+        double bestScore = -1;
+        Agent bestAgent = new Agent();
+        Agent bestGenerationAgent = new Agent();
+
+        for (int g = 0; g < numberOfGenerations; g++) {
+            double generationScore = 0;
+            double generationBestScore = -1;
+            for (Agent agent : population) {
+                double agentScore = testAgent(agent, maxGames, maxTurns);
+                generationScore += agentScore;
+                agent.setFitness(agentScore);
+                if (agentScore > generationBestScore) {
+                    generationBestScore = agentScore;
+                    bestGenerationAgent = agent;
+                    if (agentScore >= bestScore) {
+                        bestScore = agentScore;
+                        bestAgent = agent;
+                    }
+                }
+            }
+            System.out.println("Generation " + g + " avg score: " + generationScore / (population.size() * maxGames)
+                    + " generation best: " + generationBestScore + " total best score: " + bestScore);
+            if (g % 10 == 0) {
+                System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()));
+                System.out.println("Best score generation chromosome: " + Arrays.toString(bestGenerationAgent.getChromosome()));
+            }
+            nextGeneration();
+        }
+        System.out.println("Best score ever chromosome: " + Arrays.toString(bestAgent.getChromosome()));
+        System.out.println("Best score generation chromosome: " + Arrays.toString(bestGenerationAgent.getChromosome()));
+        return bestAgent;
+    }
+
+    public static double[] testAgent(Agent agent, Environment engine, int maxGames) {
+        double[] scoreArray = new double[maxGames];
+        for (int n = 0; n < maxGames; n++) {
+            // set environment to initial state
+            engine.reset();
+            StepResult stepResult = null;
+            // while game is not over
+            boolean isFinalStep = false;
+            double turns = 0;
+            while (!isFinalStep) {
+                turns++;
+                // set new tetrimino in desired location
+                engine.runFullSimulation(agent);
+                // move tetrimino down until it drops
+                boolean tetriminoDropped = false;
+                while (!tetriminoDropped) {
+                    // save results
+                    stepResult = engine.step(Action.END_TURN);
+                    tetriminoDropped = stepResult.isTetriminoDropped();
+                }
+                // tetrimino dropped, check if game is over
+                isFinalStep = stepResult.isFinalStep();
+                if (turns % 10000 == 0) {
+                    System.out.println("Turns:" + turns + " Score: " + stepResult.getGameScore());
+                }
+            }
+            // game is over, save agent results
+            scoreArray[n] = stepResult.getGameScore();
+            System.out.println("End of game " + (n + 1) + ". Turns taken: " + turns);
+        }
+        return scoreArray;
+    }
+
+    @Override
+    public String toString() {
+        return "Evolution{" +
+                "targetPopulationSize=" + targetPopulationSize +
+                ", initPopulationSize=" + initPopulationSize +
+                ", reproductionRate=" + reproductionRate +
+                ", mutationRate=" + mutationRate +
+                '}';
     }
 }

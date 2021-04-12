@@ -20,12 +20,11 @@ public class TetriminoBuilder {
 
     /**
      * Builds new {@code Tetrimino}
+     *
      * @return {@code Tetrimino} with random shape
      */
     public Tetrimino buildNewTetrimino() {
-        // get shape for new tetrimino
         Shape shape = shapeGenerator.getShape();
-        // build and return tetrimino
         return buildTetrimino(shape);
     }
 
@@ -138,7 +137,7 @@ public class TetriminoBuilder {
             bricks[i] = new Brick(position, color);
         }
         for (; i < 4; i++) {
-            Position position = new Position(spawnX + i -1, 0);
+            Position position = new Position(spawnX + i - 1, 0);
             bricks[i] = new Brick(position, color);
         }
         return new Tetrimino(SHAPE_S, color, bricks, 2);

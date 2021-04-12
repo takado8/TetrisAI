@@ -13,11 +13,11 @@ public enum Color {
 
     private final String colorHexString;
 
-    Color(final String colorHexString){
+    Color(final String colorHexString) {
         this.colorHexString = colorHexString;
     }
 
-    public String getHexString(){
+    public String getHexString() {
         return colorHexString;
     }
 }

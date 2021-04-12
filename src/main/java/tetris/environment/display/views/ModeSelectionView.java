@@ -10,12 +10,8 @@ import javafx.scene.control.ToggleGroup;
 import static tetris.environment.display.Constants.*;
 import static tetris.environment.display.Constants.MODE_HUMAN_RADIO_BUTTON_LAYOUT_Y;
 
-public interface ModeSelectionView {
-
-    void aiModeSelected();
-    void humanModeSelected();
-
-    default void setupModeRadioButtons(ObservableList<Node> rootChildren){
+public class ModeSelectionView {
+    public static void setupModeSelectionView(ModeSelection modeSelection, ObservableList<Node> rootChildren) {
         ToggleGroup modeGroup = new ToggleGroup();
         RadioButtonDisplay aiModeButton = new RadioButtonDisplay(modeGroup, MODE_AI_RADIO_BUTTON_TXT,
                 MODE_AI_RADIO_BUTTON_LAYOUT_X, MODE_AI_RADIO_BUTTON_LAYOUT_Y, true);
@@ -24,17 +20,14 @@ public interface ModeSelectionView {
 
         rootChildren.add(aiModeButton);
         rootChildren.add(humanModeButton);
-        modeGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>()
-        {
-            public void changed(ObservableValue<? extends Toggle> ob, Toggle o, Toggle n)
-            {
-                RadioButtonDisplay radioButton = (RadioButtonDisplay)modeGroup.getSelectedToggle();
+        modeGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+            public void changed(ObservableValue<? extends Toggle> ob, Toggle o, Toggle n) {
+                RadioButtonDisplay radioButton = (RadioButtonDisplay) modeGroup.getSelectedToggle();
                 if (radioButton != null) {
-                    if (radioButton == aiModeButton){
-                        aiModeSelected();
-                    }
-                    else if (radioButton == humanModeButton){
-                        humanModeSelected();
+                    if (radioButton == aiModeButton) {
+                        modeSelection.aiModeSelected();
+                    } else if (radioButton == humanModeButton) {
+                        modeSelection.humanModeSelected();
                     }
                 }
             }

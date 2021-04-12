@@ -45,6 +45,11 @@ public class Agent {
     public double evaluateMove(double[] inputs) {
         double[] evaluation = neuralNet.feedNet(inputs);
         return evaluation[0];
+//        double moveEvaluation = 0.0;
+//        for (int i = 0; i < inputs.length; i++) {
+//            moveEvaluation += inputs[i] * chromosome[i];
+//        }
+//        return moveEvaluation;
     }
 
     /**

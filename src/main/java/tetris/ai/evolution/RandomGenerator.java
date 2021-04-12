@@ -9,7 +9,7 @@ public class RandomGenerator extends Random {
     private RandomGenerator() {
     }
 
-    public boolean percentChance(double chance){
+    public boolean percentChance(double chance) {
         return nextDouble() < chance;
     }
 

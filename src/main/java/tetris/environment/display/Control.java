@@ -24,8 +24,7 @@ import java.util.List;
 import static tetris.environment.display.Constants.*;
 
 
-public class Control extends Application implements ModeSelectionView {
-    // game engine
+public class Control extends Application implements ModeSelection {
     private Environment gameEngine;
     // display objects
     private Group root;
@@ -58,7 +57,7 @@ public class Control extends Application implements ModeSelectionView {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         gameEngine = new TetrisEngine();
         root = new Group();
         Scene scene = setupScene(root);
@@ -110,7 +109,7 @@ public class Control extends Application implements ModeSelectionView {
         }
     }
 
-    private void updateScoreLabel(){
+    private void updateScoreLabel() {
         scoreLabel.setText(SCORE_LABEL_TXT + (int) gameScore);
     }
 
@@ -140,12 +139,9 @@ public class Control extends Application implements ModeSelectionView {
     }
 
     private void updateDisplay(StepResult stepResult) {
-        // update position in all elements
-        // for now just erase old and replace with new ones.
         for (BrickDisplay brick : brickDisplayList) {
             root.getChildren().remove(brick);
         }
-
         brickDisplayList.clear();
         for (Brick brick : stepResult.getBricks()) {
             BrickDisplay brickDisplay = new BrickDisplay(brick);
@@ -154,7 +150,7 @@ public class Control extends Application implements ModeSelectionView {
         }
     }
 
-    private SceneDisplay setupScene(Group root){
+    private SceneDisplay setupScene(Group root) {
         SceneDisplay sceneDisplay = new SceneDisplay(root);
         addKeyboardListeners(sceneDisplay);
         return sceneDisplay;
@@ -168,21 +164,22 @@ public class Control extends Application implements ModeSelectionView {
         scoreLabel = new LabelDisplay(SCORE_LABEL_TXT + "0", SCORE_LABEL_LAYOUT_X, SCORE_LABEL_LAYOUT_Y);
         rootChildren.add(scoreLabel);
         rootChildren.add(new LabelDisplay(MODE_LABEL_TXT, MODE_LABEL_LAYOUT_X, MODE_LABEL_LAYOUT_Y));
-        setupModeRadioButtons(rootChildren);
         rootChildren.add(new StartButtonDisplay(this::startButtonClicked));
+        ModeSelectionView.setupModeSelectionView(this, rootChildren);
     }
 
-    private void addKeyboardListeners(SceneDisplay scene){
+    private void addKeyboardListeners(SceneDisplay scene) {
         scene.addEventFilter(KeyEvent.KEY_PRESSED, this::keyboardListener);
         scene.addEventFilter(KeyEvent.KEY_RELEASED, this::keyboardListenerRelease);
     }
 
-    public void aiModeSelected () {
+    public void aiModeSelected() {
         timeDelayNormal = DELAY_SECONDS_AI;
         timeDelay = timeDelayNormal;
         aiMode = true;
     }
-    public void humanModeSelected () {
+
+    public void humanModeSelected() {
         timeDelayNormal = DELAY_SECONDS_NORMAL;
         timeDelay = timeDelayNormal;
         aiMode = false;

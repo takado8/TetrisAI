@@ -33,7 +33,6 @@ public class Tetrimino {
         this.bricks = tetrimino.getBricks();
     }
 
-    // bricks in array are mutable on purpose
     public Brick[] getBricks() {
         return bricks;
     }
@@ -46,7 +45,7 @@ public class Tetrimino {
         return color;
     }
 
-    public Position[] getPositions(){
+    public Position[] getPositions() {
         Position[] bricksStartingPositions = new Position[4];
         for (int i = 0; i < 4; i++) {
             bricksStartingPositions[i] = new Position(bricks[i].getPosition());
@@ -58,8 +57,23 @@ public class Tetrimino {
         return possibleOrientationsNb;
     }
 
+    public static void resetIdCounter() {
+        idCounter = 0;
+        Brick.resetIdCounter();
+    }
+
     @Override
     public boolean equals(Object o) {
-        return this == o;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Tetrimino tetrimino = (Tetrimino) o;
+
+        return id == tetrimino.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
     }
 }
