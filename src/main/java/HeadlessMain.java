@@ -14,12 +14,6 @@ public class HeadlessMain {
     public static void main(String[] args) {
         System.out.println("Neural net shape: " + Arrays.toString(NEURAL_NETWORK_SHAPE));
         Environment gameEnvironment = new TetrisEngine();
-//
-//        Evolution evolution = new Evolution(gameEnvironment, 6000,
-//                200, 0.4, 0.1);
-//
-//        var evolvedAgent = evolution.evolve(2000, 1, 300);
-//        Evolution.testAgent(evolvedAgent, gameEnvironment, 3);
 
         var scores = Evolution.testAgent(new Agent(AGENT_CHROMOSOME), gameEnvironment, 3);
         for (int i = 0; i < scores.length; i++) {
