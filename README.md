@@ -10,14 +10,14 @@ This is a second, upgraded version, capable of breaking current [human Guinness 
 In each turn, for current tetrimino and the following one, every possible move is simulated and the game field is evaluated using four heuristics:
 1. ColumnsSummedHeight - summed height of the columns.
 2. NumberOfCompleteLines - number of completed lines.
-3. NumberOfHoles - number of 'holes' - empty inaccessible spaces.
+3. NumberOfHoles - number of 'holes' - empty, inaccessible spaces.
 4. ColumnsSummedHeightDifference - summed difference of adjacent columns height.
 
 Some other features was tested as well, such as points of touch - number of points, where tetrimino touches other tetriminoes or walls, total amount of tetriminoes, 
 summedHeight adjusted to overall average height. No improvement was observed and selected above four features were considered sufficient.
 
 
-each value has a multiplier (weight) (successively a, b, c, d), so the complete equation is as follows:
+Each value has a multiplier (weight) (successively a, b, c, d), so the complete equation is as follows:
 ```python
     field_value = ColumnsSummedHeight * a + NumberOfCompleteLines * b + NumberOfHoles * c + ColumnsSummedHeightDifference * d
 ```
@@ -32,9 +32,9 @@ Normalization of inputs and changing activation function did not change results.
 
 ## Genetic algorithm
 
-General purpose of genetic algorithms is to maximize (or minimize) a function - here called fitness function, through simplified evolutionary mechanisms observed in natural environment, such as natural selection and genetic variation.
+General purpose of genetic algorithms is to maximize (or minimize) a function - here called a fitness function, through simplified evolutionary mechanisms observed in natural environment, such as natural selection and genetic variation.
 
-In this tetris environment, a goal is to maximize number of cleaned lines, using field evaluation formula from above.
+In this tetris environment, the goal is to maximize number of cleaned lines, using field evaluation formula from above.
 On start, set of vectors is initialized, each vector [a,b,c,d,...,n] has floats (called genes) in range <-1;1>. Those vectors are called genotypes, and
 all together make a population.
 
@@ -73,7 +73,7 @@ A mutation is a random addition to a gene value in the range <-0.1; 0.1>, which 
 
 ## Results
 
-After several hours the AI is manage to break current human Guinness record in standard NES Tetris 9 out of 10 times with less than 70,000 tetriminoes. 
+After several hours the AI manages to break current human Guinness record in standard NES Tetris 9 out of 10 times with less than 70,000 tetriminoes. 
 Created AI is capable of cleaning over million tetriminoes in one game.
 
 https://user-images.githubusercontent.com/39505866/140616986-10a2e0ac-fdf7-4874-af78-b684310968a9.mp4
