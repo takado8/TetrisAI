@@ -45,35 +45,35 @@ subjects will reproduce untill the population will be restored.
 Population is now tested again and whole cycle repeats.
 
 Genetic variability is provided by the crossing-over process and mutation.
-In this project, crossing-over process refers to creating a new genotype from existing two, by summing corresponding genes weighted towards more fitted parrent and normalizing derived vector.
+In this project, crossing-over process refers to creating a new genotype from existing two, by summing corresponding genes weighted towards more fitted parrent and normalizing derived vector. Bias is introduced to avoid multiplying by 0.
 ```python
-    AI crossing_over(AI a, AI b)
-    {
-        AI c = new AI();
-        for (int i = 0; i < a.genotype.Count; i++)
-        {
-            c.Add(a[i] * a.fitness + b[i] * b.fitness);
+    Agent crossingOverGenes(Agent parent1, Agent parent2) {
+        var parent1Chromosome = parent1.getChromosome();
+        var parent2Chromosome = parent2.getChromosome();
+        var newChromosome = new double[NUMBER_OF_GENES];
+
+        for (int i = 0; i < newChromosome.length; i++) {
+            newChromosome[i] = parent1Chromosome[i] * (parent1.getFitness() + CROSSING_OVER_BIAS) +
+                    parent2Chromosome[i] * (parent2.getFitness() + CROSSING_OVER_BIAS);
         }
-        c.normalize();
-        return c;
+        Agent offspring = new Agent(newChromosome);
+        offspring.normalizeChromosome();
+
+        return offspring;
     }
 ```
 A mutation is a random addition to a gene value in the range <-0.1; 0.1>, which appears rather rarely (5% in this project).
 ```python
-    AI mutate(AI c)
-    {
-        if (Rand.NextDouble() < mutation_rate)
-        {
-            c[Rand.Next(c.genotype.Count)] += Rand.NextDouble(-0.2, 0.2);
-            c.normalize();
-        }
-        return c;
+    void mutate() {
+        int mutationIndex = randomGenerator.nextInt(chromosome.length);
+        chromosome[mutationIndex] += randomGenerator.nextDouble(-MUTATION_VALUE, MUTATION_VALUE);
+        normalizeChromosome();
     }
 ```
 
 ## Results
 
-After several hours the AI manages to break current human Guinness record in standard NES Tetris 9 out of 10 times with less than 70,000 tetriminoes. 
+After few hours of training the AI manages to break current human Guinness record in standard NES Tetris 9 out of 10 times with less than 70,000 tetriminoes. 
 Created AI is capable of cleaning over million tetriminoes in one game.
 
 https://user-images.githubusercontent.com/39505866/140616986-10a2e0ac-fdf7-4874-af78-b684310968a9.mp4
