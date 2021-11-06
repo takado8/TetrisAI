@@ -10,7 +10,10 @@ import tetris.environment.engine.tetrimino.TetriminoBuilder;
 import tetris.environment.engine.tetrimino.features.Position;
 import tetris.environment.engine.tetrimino.features.Shape;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static tetris.environment.engine.Constants.*;
 
@@ -50,7 +53,7 @@ public class TetrisEngine implements Environment {
                 tetriminoDropped = true;
                 putDownTetrimino();
                 int completedLines = RemoveCompletedLines();
-                gameScore += completedLines;
+                gameScore += NES_Scoring(completedLines);
                 addNewFallingTetriminoToGameField();
             }
             if (isGameOver()) {
@@ -80,16 +83,22 @@ public class TetrisEngine implements Environment {
 
     /**
      * Original Tetrimino NES scoring system.
+     *
      * @param completedLines number of lines completed in one turn.
      * @return score
      */
     private double calculateScore(int completedLines) {
         switch (completedLines) {
-            case 1: return 40;
-            case 2: return 100;
-            case 3: return 300;
-            case 4: return 1200;
-            default: return 0;
+            case 1:
+                return 40;
+            case 2:
+                return 100;
+            case 3:
+                return 300;
+            case 4:
+                return 1200;
+            default:
+                return 0;
         }
     }
 
@@ -625,6 +634,26 @@ public class TetrisEngine implements Environment {
         // but should appear rarely, so we take half of that.
         // normalize to range <0;~1>
         return ((double) columnsHeightDiff) / (((double) GAME_FIELD_SIZE_Y * (double) GAME_FIELD_SIZE_X) / 2);
+    }
+
+    /**
+     * Original Nintendo Scoring System.
+     * Uses only level 0 scoring system, as speeding up the game does not make game harder for the AI.
+     * The quick drop (soft drop) bonus is omitted for same reason.
+     * */
+    public double NES_Scoring(int completedLines) {
+        switch (completedLines) {
+            case 1:
+                return 40;
+            case 2:
+                return 100;
+            case 3:
+                return 300;
+            case 4:
+                return 1200;
+            default:
+                return completedLines;
+        }
     }
 
     public void printGameFieldArr() {

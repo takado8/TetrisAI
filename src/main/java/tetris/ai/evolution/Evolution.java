@@ -7,8 +7,7 @@ import tetris.environment.engine.results.StepResult;
 
 import java.util.*;
 
-import static tetris.ai.Constants.CROSSING_OVER_BIAS;
-import static tetris.ai.Constants.NUMBER_OF_GENES;
+import static tetris.ai.Constants.*;
 import static tetris.ai.evolution.RandomGenerator.randomGenerator;
 
 public class Evolution {
@@ -249,7 +248,8 @@ public class Evolution {
         return bestAgent;
     }
 
-    public static double[] testAgent(Agent agent, Environment engine, int maxGames) {
+    public static double[] testAgent(Agent agent, Environment engine, int maxGames, boolean resetAfterBreakingGuinnessRecord) {
+        int guinnessRecordsBroken = 0;
         double[] scoreArray = new double[maxGames];
         for (int n = 0; n < maxGames; n++) {
             // set environment to initial state
@@ -273,6 +273,11 @@ public class Evolution {
                 isFinalStep = stepResult.isFinalStep();
                 if (turns % 10000 == 0) {
                     System.out.println("Turns:" + turns + " Score: " + stepResult.getGameScore());
+                    if (resetAfterBreakingGuinnessRecord && stepResult.getGameScore() > GUINNESS_RECORD) {
+                        guinnessRecordsBroken++;
+                        System.out.println("Guinness Record(s) broken: " + guinnessRecordsBroken + ". reset.");
+                        break;
+                    }
                 }
             }
             // game is over, save agent results
