@@ -71,7 +71,32 @@ A mutation is a random addition to a gene value in the range <-0.1; 0.1>, which 
     }
 ```
 
+## Results
 
+After several hours the following set of genes has been found:
+```python
+    a = -0.798752914564018
+    b = 0.522287506868767
+    c = -0.24921408023878
+    d = -0.164626498034284
+```
+Created AI manage to clean over 2000 lines in one game.
 
+![img1](.gif)
 
+## How to use
+
+Clone and build project. Run UIMain class for graphical UI, or HeadlessMain class for fast testing and learning.
+
+### Controls
+
+#### User game mode
+
+- move piece left or right - left and right arrow.
+- rotate - up arrow.
+- speed up - down arrow.
+- drop piece - space
+
+#### Auto and Evolution mode
+- slow down - keep down arrow
 
