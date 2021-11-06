@@ -73,16 +73,10 @@ A mutation is a random addition to a gene value in the range <-0.1; 0.1>, which 
 
 ## Results
 
-After several hours the following set of genes has been found:
-```python
-    a = -0.798752914564018
-    b = 0.522287506868767
-    c = -0.24921408023878
-    d = -0.164626498034284
-```
-Created AI manage to clean over 2000 lines in one game.
+After several hours the AI is manage to break current human Guinness record in standard NES Tetris 9 out of 10 times with less than 70,000 tetriminoes. 
+Created AI is capable of cleaning over million tetriminoes in one game.
 
-![img1](.gif)
+https://user-images.githubusercontent.com/39505866/140616986-10a2e0ac-fdf7-4874-af78-b684310968a9.mp4
 
 ## How to use
 
