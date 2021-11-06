@@ -73,7 +73,7 @@ A mutation is a random addition to a gene value in the range <-0.1; 0.1>, which 
 
 ## Results
 
-After few hours of training the AI manages to break current human Guinness record in standard NES Tetris 9 out of 10 times with less than 70,000 tetriminoes. 
+After few hours of training the AI manages to break current [human Guinness record in NES Tetris](https://www.guinnessworldrecords.com/world-records/607869-highest-score-on-nes-tetris-ntsc) 9 out of 10 times with less than 70,000 tetriminoes. 
 Created AI is capable of cleaning over million tetriminoes in one game.
 
 https://user-images.githubusercontent.com/39505866/140616986-10a2e0ac-fdf7-4874-af78-b684310968a9.mp4
