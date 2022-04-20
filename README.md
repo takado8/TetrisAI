@@ -2,8 +2,7 @@
 
 Tetris environment and AI for playing it.
 
-This is a second, upgraded version, capable of breaking current [human Guinness record in NES Tetris](https://www.guinnessworldrecords.com/world-records/607869-highest-score-on-nes-tetris-ntsc) 9 out of 10 times.
-###### [*Check out previous version*](https://github.com/takado8/Tetris)
+AI is capable of breaking current [human Guinness record in NES Tetris](https://www.guinnessworldrecords.com/world-records/607869-highest-score-on-nes-tetris-ntsc) 9 out of 10 times.
 
 ## AI algorithm:
 
