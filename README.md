@@ -7,10 +7,10 @@ AI is capable of breaking current [human Guinness record in NES Tetris](https://
 ## AI algorithm:
 
 In each turn, for current piece and the following one, every possible move is simulated and the game field is evaluated using four heuristics:
-1. ColumnsSummedHeight - summed height of the columns.
-2. NumberOfCompleteLines - number of completed lines.
-3. NumberOfHoles - number of 'holes' - empty, inaccessible spaces.
-4. ColumnsSummedHeightDifference - summed difference of adjacent columns height.
+1. Summed height of the columns.
+2. Number of completed lines.
+3. Number of 'holes' - empty, inaccessible spaces.
+4. CSummed difference of adjacent columns height.
 
 Some other features was tested as well, such as points of touch - number of points, where tetrimino touches other tetriminoes or walls, total amount of tetriminoes, 
 summedHeight adjusted to overall average height. No improvement was observed and selected above four features were considered sufficient.
