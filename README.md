@@ -6,7 +6,7 @@ AI is capable of breaking current [human Guinness record in NES Tetris](https://
 
 ## AI algorithm:
 
-In each turn, for current tetrimino and the following one, every possible move is simulated and the game field is evaluated using four heuristics:
+In each turn, for current piece and the following one, every possible move is simulated and the game field is evaluated using four heuristics:
 1. ColumnsSummedHeight - summed height of the columns.
 2. NumberOfCompleteLines - number of completed lines.
 3. NumberOfHoles - number of 'holes' - empty, inaccessible spaces.
