@@ -16,7 +16,7 @@ Some other features was tested as well, such as points of touch - number of poin
 summedHeight adjusted to overall average height. No improvement was observed and selected above four features were considered sufficient.
 
 
-Each value has a multiplier (weight) (successively a, b, c, d), so the complete equation is as follows:
+Each value has a multiplier (weight) (successively a, b, c, d), so the complete formula is as follows:
 ```python
     field_value = ColumnsSummedHeight * a + NumberOfCompleteLines * b + NumberOfHoles * c + ColumnsSummedHeightDifference * d
 ```
