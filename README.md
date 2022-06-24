@@ -24,9 +24,9 @@ multipliers values are searched for with genetic algorithm.
 
 In this version of algorithm, simple neural network was introduced to extend learning capabilities. First layer consists of above formula, following layers are fully connected,
 and final layer consists of one output neuron. All weights are searched for with genetic algorithm.
-Introducing neural network didn't bring expected results, instead, a decrease of efficiency was observed.
-Probably, trading-off learning time for more complex network is not optimal for my computing capabilities.
-Normalization of inputs and changing activation function did not change results. 
+Neural network didn't bring expected results, instead, a decrease of efficiency was observed.
+Probably, trading-off learning time for more complex network is not optimal for given computing capabilities.
+Normalization of inputs and changing activation function did not change the results. 
 
 
 ## Genetic algorithm
