@@ -10,7 +10,7 @@ In each turn, for current piece and the following one, every possible move is si
 1. Summed height of the columns.
 2. Number of completed lines.
 3. Number of 'holes' - empty, inaccessible spaces.
-4. CSummed difference of adjacent columns height.
+4. Summed difference of adjacent columns height.
 
 Some other features was tested as well, such as points of touch - number of points, where tetrimino touches other tetriminoes or walls, total amount of tetriminoes, 
 summedHeight adjusted to overall average height. No improvement was observed and selected above four features were considered sufficient.
